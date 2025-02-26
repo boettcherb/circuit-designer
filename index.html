@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Designer</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="top-bar">
+        <div>Menu</div>
+        <div>Options</div>
+    </div>
+    
+    <div id="left-panel">
+        <div class="sidebar-tab">
+            <button id="io-dropdown-button" class="tab-button">Input/Output</button>
+            <div class="dropdown-content" id="io">
+                <div class="dropdown-item">Power</div>
+                <div class="dropdown-item">Ground</div>
+                <div class="dropdown-item">Input Bit</div>
+                <div class="dropdown-item">Output Bit</div>
+            </div>
+        </div>
+        <div class="sidebar-tab">
+            <button id="basic-components-dropdown-button" class="tab-button">Basic Components</button>
+            <div class="dropdown-content" id="basic-components">
+                <div id="resistor-dropdown-item" class="dropdown-item">Resistor</div>
+                <div id="capacitor-dropdown-item" class="dropdown-item">Capacitor</div>
+                <div class="dropdown-item">Inductor</div>
+                <div class="dropdown-item">Diode</div>
+                <div class="dropdown-item">Transistor</div>
+            </div>
+        </div>
+        <div class="sidebar-tab">
+            <button id="logic-gates-dropdown-button" class="tab-button">Logic Gates</button>
+            <div class="dropdown-content" id="logic-gates">
+                <div class="dropdown-item">AND Gate</div>
+                <div class="dropdown-item">OR Gate</div>
+                <div class="dropdown-item">NOT Gate</div>
+                <div class="dropdown-item">NAND Gate</div>
+                <div class="dropdown-item">NOR Gate</div>
+                <div class="dropdown-item">XOR Gate</div>
+            </div>
+        </div>
+    </div>
+    <div id="canvas-container">
+        <div id="canvas"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/konva@8.4.2/konva.min.js"></script>
+    <script type="module" src="scripts/stage.js"></script>
+    <script type="module" src="scripts/comp.js"></script>
+    <script type="module" src="scripts/grid.js"></script>
+    <script type="module" src="scripts/compManager.js"></script>
+    <script type="module" src="scripts/script.js"></script>
+</body>
+</html>

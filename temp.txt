@@ -1,0 +1,14 @@
+// The user just clicked on the dropdown with the given id. If this dropdown
+// was already open, close it. Otherwise, close all other dropdowns and open
+// this one.
+function toggleDropdown(id) {
+    const dropdown = document.getElementById(id);
+    if (dropdown.style.display === 'flex') {
+        dropdown.style.display = 'none';
+    } else {
+        document.querySelectorAll('.dropdown-content').forEach((content) => {
+            content.style.display = 'none';
+        });
+        dropdown.style.display = 'flex';
+    }
+}

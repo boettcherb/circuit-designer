@@ -1,0 +1,20 @@
+If there are 2 wires that connect between the same pair of nodes, delete one (or just
+don't create a wire if the same wire already exists).
+
+Make Wire not be a subclass of component (dont need component type, gh, or gw). Remove
+gx, gy, gx2, and gy2 from wire (get these values from startNode and endNode)
+
+How do I change the color of a node/terminal to red when the user moves their mouse
+over it?
+
+Add options to hide the terminals of each component type.
+    If a user clicks on a resistor, for example, a menu will appear on the left (bottom
+    of the left sidebar) and it will have a bunch of options. Add these:
+        - Hide terminals (checkbox)
+        - Hide all resistor terminals (checkbox) (this will also check the first option)
+
+Add a button at the top to clean up extra nodes/wires (wires that aren't connected
+to anything and nodes that are along straight wires that aren't at forks)
+
+buttons for downloading and uploading states/circuits. If the user presses upload and
+there are components on the canvas, ask them if they want to save their circuit
