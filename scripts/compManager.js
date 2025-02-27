@@ -67,20 +67,9 @@ class ComponentManager {
             const old_gy = component.gy;
             component.gx = (group.x() - grid.offsetX) / grid.gridSize;
             component.gy = (group.y() - grid.offsetY) / grid.gridSize;
-            const dx = component.gx - old_gx;
-            const dy = component.gy - old_gy;
             for (const terminal of component.terminals) {
-                terminal.gx += dx;
-                terminal.gy += dy;
-                for (const wire of terminal.connections) {
-                    if (terminal === wire.startNode) {
-                        wire.gx += dx;
-                        wire.gy += dy;
-                    } else {
-                        wire.gx2 += dx;
-                        wire.gy2 += dy;
-                    }
-                }
+                terminal.gx += component.gx - old_gx;
+                terminal.gy += component.gy - old_gy;
             }
             this.layer.draw();
         });
@@ -112,12 +101,14 @@ class ComponentManager {
     }
 
     deleteWire(wire) {
+        // Remove the wire from the connections of the start and end nodes
         if (wire.startNode !== null) {
             wire.startNode.connections = wire.startNode.connections.filter(w => w !== wire)
         }
         if (wire.endNode !== null) {
             wire.endNode.connections = wire.endNode.connections.filter(w => w !== wire)
         }
+        // Remove the wire from the list of wires
         this.wires = this.wires.filter(w => w !== wire);
         wire.line.destroy();
         this.layer.draw();
@@ -156,10 +147,10 @@ class ComponentManager {
             comp.group.y(grid.offsetY + comp.gy * grid.gridSize);
         }
         for (const wire of this.wires) {
-            const x1 = grid.offsetX + wire.gx * grid.gridSize;
-            const y1 = grid.offsetY + wire.gy * grid.gridSize;
-            const x2 = grid.offsetX + wire.gx2 * grid.gridSize;
-            const y2 = grid.offsetY + wire.gy2 * grid.gridSize;
+            const x1 = grid.offsetX + wire.startNode.gx * grid.gridSize;
+            const y1 = grid.offsetY + wire.startNode.gy * grid.gridSize;
+            const x2 = grid.offsetX + wire.endNode.gx * grid.gridSize;
+            const y2 = grid.offsetY + wire.endNode.gy * grid.gridSize;
             wire.line.points([x1, y1, x2, y2]);
         }
         for (const node of this.nodes) {
@@ -191,12 +182,6 @@ class ComponentManager {
         const dy = (oldY - grid.offsetY) / grid.gridSize;
         for (const comp of this.components) {
             comp.updateGridPosition(dx, dy);
-        }
-        for (const wire of this.wires) {
-            wire.gx += dx;
-            wire.gy += dy;
-            wire.gx2 += dx;
-            wire.gy2 += dy;
         }
         for (const node of this.nodes) {
             node.gx += dx;

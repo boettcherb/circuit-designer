@@ -10,8 +10,6 @@ import { compManager } from "./compManager.js"
 // - Image
 // - Type (enum)
 // - Terminals (array of Terminal)
-//
-// Wire extends Component
 // 
 // Resistor extends Component (gw = 3, gh = 2, Type = RESISTOR)
 // - resistance (ohms)
@@ -27,7 +25,6 @@ import { compManager } from "./compManager.js"
 
 // enum for component types
 export const ComponentType = {
-    WIRE: 100,
     VOLTAGE_SOURCE: 1000,
     GROUND: 1001,
     RESISTOR: 2000,
@@ -56,6 +53,19 @@ export const NodeType = {
     OUTPUT: 3458,
     WIRE: 3459,
 };
+
+
+class Wire {
+    constructor(node, startX, startY) {
+        this.startNode = node;
+        this.endNode = null;
+        this.line = new Konva.Line({
+            points: [ startX, startY, startX, startY ],
+            stroke: 'black',
+            strokeWidth: grid.gridSize / 12,
+        })
+    }
+}
 
 
 class Node {
@@ -105,15 +115,15 @@ class Node {
         stage.on('mouseup.wire', () => {
             stage.off('mousemove.wire'); // Stop updating wire
             stage.off('mouseup.wire');   // Remove this listener
-            wire.gx2 = wire.gx + (wire.line.points()[2] - wire.line.points()[0]) / grid.gridSize;
-            wire.gy2 = wire.gy + (wire.line.points()[3] - wire.line.points()[1]) / grid.gridSize;
+            const gx2 = this.gx + (wire.line.points()[2] - startX) / grid.gridSize;
+            const gy2 = this.gy + (wire.line.points()[3] - startY) / grid.gridSize;
             // if the created wire is length 0, delete it
-            if (wire.gx == wire.gx2 && wire.gy == wire.gy2) {
+            if (this.gx == gx2 && this.gy == gy2) {
                 compManager.deleteWire(wire);
             } else {
-                let endNode = compManager.getNode(wire.gx2, wire.gy2);
+                let endNode = compManager.getNode(gx2, gy2);
                 if (endNode === null) {
-                    endNode = new Node(NodeType.WIRE, wire.gx2, wire.gy2, null)
+                    endNode = new Node(NodeType.WIRE, gx2, gy2, null)
                     compManager.addNode(endNode);
                 }
                 wire.endNode = endNode;
@@ -122,6 +132,7 @@ class Node {
         });
     }
 }
+
 
 class Component {
     constructor(type, gx, gy, gw, gh) {
@@ -148,20 +159,6 @@ class Component {
     }
 }
 
-class Wire extends Component {
-    constructor(node, startX, startY) {
-        super(ComponentType.WIRE, node.gx, node.gy, 0, 0);
-        this.gx2 = node.gx;
-        this.gy2 = node.gy;
-        this.startNode = node;
-        this.endNode = null;
-        this.line = new Konva.Line({
-            points: [ startX, startY, startX, startY ],
-            stroke: 'black',
-            strokeWidth: grid.gridSize / 12,
-        })
-    }
-}
 
 export class Resistor extends Component {
     constructor(gx, gy) {
@@ -222,6 +219,7 @@ export class Resistor extends Component {
         ];
     }
 }
+
 
 export class Capacitor extends Component {
     constructor(gx, gy) {
