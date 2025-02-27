@@ -54,10 +54,15 @@ class ComponentManager {
                 if (index == -1) {
                     throw new Error("comp not in this.components!");
                 }
+                // remove wires attached to this component
+                for (const terminal of component.terminals) {
+                    for (const wire of terminal.connections) {
+                        this.deleteWire(wire);
+                    }
+                }
                 this.components.splice(index, 1);
                 group.destroy();
                 this.layer.draw();
-                // TODO: remove wires attached to this component
                 return;
             }
 
