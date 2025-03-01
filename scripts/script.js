@@ -13,6 +13,11 @@ window.addEventListener('resize', () => {
     grid.draw();
 });
 
+// Prevent the browser’s default context menu on right-click
+stage.on('contextmenu', (e) => {
+    e.evt.preventDefault();
+});
+
 let lastMousePos = { x: 0, y: 0 };
 stage.on('mousedown touchstart', () => {
     grid.isDragging = true;

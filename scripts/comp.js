@@ -77,6 +77,7 @@ class Node {
         this.gy = gy;
         this.comp = comp;
         this.connections = []; // wires connected to this node
+
         // If this node is tied to a component, then comp is not null and the offset of this node is
         // relative to the component. If this node is NOT tied to a component, then comp is null and
         // the offset is relative to the grid.
@@ -86,18 +87,49 @@ class Node {
             fill: 'black',
             radius: grid.gridSize / 6,
         });
+
+        // left click on node: create wire coming from node
+        // right click on node: start dragging node
         this.circle.on('mousedown', (e) => {
             e.cancelBubble = true;
-            const xpos = grid.offsetX + this.gx * grid.gridSize;
-            const ypos = grid.offsetY + this.gy * grid.gridSize;
-            this.createWire(xpos, ypos);
+            if (e.evt.button === 2) { // right click
+                if (this.comp !== null) {
+                    this.comp.group.startDrag();
+                } else {
+                    this.circle.draggable(true);
+                    this.circle.startDrag();
+                }
+            } else { // left click
+                const xpos = grid.offsetX + this.gx * grid.gridSize;
+                const ypos = grid.offsetY + this.gy * grid.gridSize;
+                this.createWire(xpos, ypos);
+            }
         });
-        this.circle.on('mouseover', () => {
-            document.body.style.cursor = 'pointer';
+
+        // When a node is dragged, snap it to the grid and update connected wires.
+        this.circle.on('dragmove', () => {
+            const pos = grid.snapToGrid(this.circle.position());
+            this.circle.position(pos);
+            this.gx = (pos.x - grid.offsetX) / grid.gridSize;
+            this.gy = (pos.y - grid.offsetY) / grid.gridSize;
+            for (const wire of this.connections) {
+                if (this === wire.startNode) {
+                    wire.line.points()[0] = pos.x;
+                    wire.line.points()[1] = pos.y;
+                } else if (this === wire.endNode) {
+                    wire.line.points()[2] = pos.x;
+                    wire.line.points()[3] = pos.y;
+                }
+            }
+            compManager.layer.draw();
         });
-        this.circle.on('mouseout', () => {
-          document.body.style.cursor = 'default';
-        });
+
+        this.circle.on('dragend', () => {
+            this.circle.draggable(false);
+        })
+
+        this.circle.on('mouseover', () => { document.body.style.cursor = 'pointer'; });
+        this.circle.on('mouseout', () => { document.body.style.cursor = 'default'; });
     }
     
     createWire(startX, startY) {
