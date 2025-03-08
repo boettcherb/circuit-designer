@@ -1,7 +1,7 @@
 import { stage } from "./stage.js";
 import { grid } from "./grid.js";
 import { compManager } from "./compManager.js";
-import { Capacitor, Resistor } from "./comp.js";
+import { Capacitor, Resistor, Inductor } from "./comp.js";
 
 grid.draw();
 compManager.addComponent(new Resistor(2, 2));
@@ -112,4 +112,7 @@ document.getElementById('resistor-dropdown-item').addEventListener('click', () =
 });
 document.getElementById('capacitor-dropdown-item').addEventListener('click', () => {
     compManager.addComponent(new Capacitor(2, 2));
+});
+document.getElementById('inductor-dropdown-item').addEventListener('click', () => {
+    compManager.addComponent(new Inductor(2, 2));
 });

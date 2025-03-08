@@ -29,6 +29,7 @@ export const ComponentType = {
     GROUND: 1001,
     RESISTOR: 2000,
     CAPACITOR: 2001,
+    INDUCTOR: 2002,
     AND_GATE: 3000,
     OR_GATE: 3001,
     NOT_GATE: 3002,
@@ -310,19 +311,66 @@ export class Capacitor extends Component {
                 fill: 'transparent',
                 strokeWidth: 0,
             }),
-            // first terminal
-            new Konva.Circle({
-                x: 0,
-                y: s,
-                fill: 'black',
-                radius: s / 8,
+        ];
+    }
+}
+
+export class Inductor extends Component {
+    constructor(gx, gy) {
+        super(ComponentType.INDUCTOR, gx, gy, 3, 2);
+        this.inductance = 1; // Henries
+        const s = grid.gridSize;
+        this.terminals = [
+            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this),
+            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this),
+        ];
+        const sWidth = s / 12;
+        this.lines = [
+            // First lead
+            new Konva.Line({
+                points: [0, s, 0.5 * s, s],
+                stroke: 'black',
+                strokeWidth: sWidth,
             }),
-            // second terminal
-            new Konva.Circle({
-                x: 3 * s,
-                y: s,
-                fill: 'black',
-                radius: s / 8,
+            // Coil
+            new Konva.Line({
+                points: [
+                    0.5 * s, s,
+                    0.825 * s, 0.5 * s,
+                    1.15 * s, s,
+                    1.05 * s, 1.3 * s,
+                    0.95 * s, s,
+                    1.275 * s, 0.5 * s,
+                    1.6 * s, s,
+                    1.5 * s, 1.3 * s,
+                    1.4 * s, s,
+                    1.725 * s, 0.5 * s,
+                    2.05 * s, s,
+                    1.95 * s, 1.3 * s,
+                    1.85 * s, s,
+                    2.175 * s, 0.5 * s,
+                    2.5 * s, s,
+                ],
+                stroke: 'black',
+                strokeWidth: sWidth,
+                lineCap: 'round',
+                lineJoin: 'round',
+                tension: .5,
+            }),
+            // Second lead
+            new Konva.Line({
+                points: [2.5 * s, s, 3 * s, s],
+                stroke: 'black',
+                strokeWidth: sWidth,
+            }),
+            // Hitbox for easier interaction
+            new Konva.Rect({
+                x: 0,
+                y: 0.5 * s,
+                width: 3 * s,
+                height: s,
+                fill: 'transparent',
+                strokeWidth: 0,
             }),
         ];
     }
