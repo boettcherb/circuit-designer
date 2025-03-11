@@ -56,7 +56,7 @@ export const NodeType = {
 };
 
 
-class Wire {
+export class Wire {
     constructor(node, startX, startY) {
         this.startNode = node;
         this.endNode = null;
@@ -69,7 +69,7 @@ class Wire {
 }
 
 
-class Node {
+export class Node {
     constructor(type, gx, gy, comp) {
         if (comp === null && type !== NodeType.WIRE) throw new Error("Invalid node (1)");
         if (comp !== null && type === NodeType.WIRE) throw new Error("Invalid node (2)");
@@ -161,13 +161,14 @@ class Node {
                 }
                 wire.endNode = endNode;
                 endNode.connections.push(wire);
-            }
+            }            
+            compManager.reselect();
         });
     }
 }
 
 
-class Component {
+export class Component {
     constructor(type, gx, gy, gw, gh) {
         this.type = type;
         this.gx = gx;
@@ -314,6 +315,7 @@ export class Capacitor extends Component {
         ];
     }
 }
+
 
 export class Inductor extends Component {
     constructor(gx, gy) {

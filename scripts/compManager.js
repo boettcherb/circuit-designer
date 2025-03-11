@@ -1,5 +1,6 @@
 import { grid } from "./grid.js";
 import { stage } from "./stage.js";
+import { Component, Wire, Node } from "./comp.js";
 
 class ComponentManager {
     constructor() {
@@ -8,6 +9,11 @@ class ComponentManager {
         this.components = [];
         this.wires = [];
         this.nodes = []; // nodes not tied to components
+
+        // The first element (index == 0) is the selected component.
+        // The other elements (index > 0) are the wires and nodes
+        // connected to (shorted to) the selected component.
+        this.selected = [];
     }
     
     addComponent(component) {
@@ -25,6 +31,10 @@ class ComponentManager {
         }
         for (const terminal of component.terminals) {
             group.add(terminal.circle);
+            
+            terminal.circle.on('click', () => {
+                this.select(terminal);
+            });
         }
 
         group.on('dragmove', () => {
@@ -82,6 +92,7 @@ class ComponentManager {
         // Prevent grid from dragging when the user is dragging a component
         group.on('mousedown touchstart', (e) => {
             e.cancelBubble = true;
+            this.select(component);
         });
 
         group.on('mouseover', () => {
@@ -103,6 +114,15 @@ class ComponentManager {
         this.layer.add(wire.line);
         wire.line.moveToBottom();
         this.layer.draw();
+        wire.line.on('mouseover', () => {
+            document.body.style.cursor = 'pointer';
+        });
+        wire.line.on('mouseout', () => {
+          document.body.style.cursor = 'default';
+        });
+        wire.line.on('click', () => {
+            this.select(wire);
+        });
     }
 
     deleteWire(wire) {
@@ -141,6 +161,9 @@ class ComponentManager {
         this.nodes.push(node);
         this.layer.add(node.circle);
         this.layer.draw();
+        node.circle.on('click', () => {
+            this.select(node);
+        });
     }
     
     // Ensure the position of every component is at a grid line intersection.
@@ -193,6 +216,91 @@ class ComponentManager {
             node.gy += dy;
         }
         this.repositionComps();
+    }
+
+    select(obj) {
+        if (obj === null) throw new Error("obj is null!");
+        if (this.selected.length > 0 && this.selected[0] === obj) {
+            this.deselectAll();
+            return;
+        }
+        this.deselectAll();
+        this.selected.push(obj);
+        let index = 0;
+        let visited = new Set();
+        visited.add(obj);
+        // run BFS to find all wires/nodes connected to the selected component
+        while (index < this.selected.length) {
+            const o = this.selected[index++];
+            if (o instanceof Wire) {
+                if (o.startNode !== null && !visited.has(o.startNode)) {
+                    this.selected.push(o.startNode);
+                    visited.add(o.startNode);
+                }
+                if (o.endNode !== null && !visited.has(o.endNode)) {
+                    this.selected.push(o.endNode);
+                    visited.add(o.endNode);
+                }
+            } else if (o instanceof Node) {
+                for (const wire of o.connections) {
+                    if (!visited.has(wire)) {
+                        this.selected.push(wire);
+                        visited.add(wire);
+                    }
+                }
+            } else if (o instanceof Component) {
+                for (const terminal of o.terminals) {
+                    visited.add(terminal);
+                    for (const wire of terminal.connections) {
+                        if (!visited.has(wire)) {
+                            this.selected.push(wire);
+                            visited.add(wire);
+                        }
+                    }
+                }
+            }
+        }
+        // highlight the main selected component red
+        const selectedColor = 'red';
+        if (obj instanceof Component) {
+            obj.group.find('Line').forEach(line => { line.stroke(selectedColor); });
+            obj.group.find('Circle').forEach(circle => { circle.fill(selectedColor); });
+        } else if (obj instanceof Wire) {
+            obj.line.stroke(selectedColor);
+        } else if (obj instanceof Node) {
+            obj.circle.fill(selectedColor);
+        }
+        // highlight the other selected wires/nodes blue
+        const otherColor = 'blue';
+        for (let i = 1; i < this.selected.length; ++i) {
+            const o = this.selected[i];
+            if (o instanceof Wire) {
+                o.line.stroke(otherColor);
+            } else if (o instanceof Node) {
+                o.circle.fill(otherColor);
+            }
+        }
+        this.layer.draw();
+    }
+
+    deselectAll() {
+        for (const o of this.selected) {
+            if (o instanceof Component) {
+                o.group.find('Line').forEach(line => { line.stroke('black'); });
+                o.group.find('Circle').forEach(circle => { circle.fill('black'); });
+            } else if (o instanceof Wire) {
+                o.line.stroke('black');
+            } else if (o instanceof Node) {
+                o.circle.fill('black');
+            }
+        }
+        this.selected = [];
+    }
+
+    reselect() {
+        const selected = this.selected[0];
+        this.deselectAll();
+        this.select(selected);
     }
 }
 
