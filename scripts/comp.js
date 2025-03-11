@@ -64,6 +64,7 @@ export class Wire {
             points: [ startX, startY, startX, startY ],
             stroke: 'black',
             strokeWidth: grid.gridSize / 12,
+            hitStrokeWidth: grid.gridSize / 2,
         })
     }
 }

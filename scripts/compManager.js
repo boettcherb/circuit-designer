@@ -203,6 +203,7 @@ class ComponentManager {
         }
         for (const wire of this.wires) {
             wire.line.strokeWidth(grid.gridSize / 12);
+            wire.line.hitStrokeWidth(grid.gridSize / 2);
         }
         for (const node of this.nodes) {
             node.circle.radius(grid.gridSize / 6);
