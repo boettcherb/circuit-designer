@@ -32,7 +32,8 @@ class ComponentManager {
         for (const terminal of component.terminals) {
             group.add(terminal.circle);
             
-            terminal.circle.on('click', () => {
+            terminal.circle.on('click', (e) => {
+                e.cancelBubble = true;
                 this.select(terminal);
             });
         }
@@ -92,6 +93,9 @@ class ComponentManager {
         // Prevent grid from dragging when the user is dragging a component
         group.on('mousedown touchstart', (e) => {
             e.cancelBubble = true;
+        });
+
+        group.on('click', () => {
             this.select(component);
         });
 
@@ -120,7 +124,8 @@ class ComponentManager {
         wire.line.on('mouseout', () => {
           document.body.style.cursor = 'default';
         });
-        wire.line.on('click', () => {
+        wire.line.on('click', (e) => {
+            e.cancelBubble = true;
             this.select(wire);
         });
     }
@@ -261,7 +266,7 @@ class ComponentManager {
             }
         }
         // highlight the main selected component red
-        const selectedColor = 'red';
+        const selectedColor = '#FF3333';
         if (obj instanceof Component) {
             obj.group.find('Line').forEach(line => { line.stroke(selectedColor); });
             obj.group.find('Circle').forEach(circle => { circle.fill(selectedColor); });
@@ -270,8 +275,8 @@ class ComponentManager {
         } else if (obj instanceof Node) {
             obj.circle.fill(selectedColor);
         }
-        // highlight the other selected wires/nodes blue
-        const otherColor = 'blue';
+        // highlight the other selected wires/nodes a darker red
+        const otherColor = '#BB0000';
         for (let i = 1; i < this.selected.length; ++i) {
             const o = this.selected[i];
             if (o instanceof Wire) {
@@ -298,6 +303,7 @@ class ComponentManager {
     }
 
     reselect() {
+        if (this.selected.length === 0) return;
         const selected = this.selected[0];
         this.deselectAll();
         this.select(selected);

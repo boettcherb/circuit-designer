@@ -18,12 +18,23 @@ stage.on('contextmenu', (e) => {
     e.evt.preventDefault();
 });
 
+// Deselect all components when the user clicks on the stage
+let click = false;
+stage.on('click', () => {
+    if (click) {
+        click = false;
+        compManager.deselectAll();
+    }
+});
+
 let lastMousePos = { x: 0, y: 0 };
 stage.on('mousedown touchstart', () => {
+    click = true;
     grid.isDragging = true;
     lastMousePos = stage.getPointerPosition();
 });
 stage.on('mousemove touchmove', () => {
+    click = false;
     if (!grid.isDragging) {
         return;
     }
