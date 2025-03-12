@@ -6,6 +6,13 @@ import { Battery, Capacitor, Resistor, Inductor } from "./comp.js";
 grid.draw();
 compManager.addComponent(new Resistor(2, 2));
 
+// Handle key presses
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Delete') {
+        compManager.deleteSelected();
+    }
+});
+
 // Handle window resizing
 window.addEventListener('resize', () => {
     stage.width(window.innerWidth);

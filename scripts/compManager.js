@@ -24,6 +24,7 @@ class ComponentManager {
             height: component.gh * grid.gridSize,
             draggable: true,
         });
+        component.addGroup(group);
 
         // add all lines and terminals to the group
         for (const line of component.lines) {
@@ -59,21 +60,8 @@ class ComponentManager {
         group.on('dragend', () => {
             // If the component is outside the stage, remove it
             const pos = group.position();
-            if (pos.y + group.height() < 0 || pos.y > stage.height()
-                || pos.x + group.width() < 0 || pos.x > stage.width()) {
-                const index = this.components.findIndex(item => item.group === group);
-                if (index == -1) {
-                    throw new Error("comp not in this.components!");
-                }
-                // remove wires attached to this component
-                for (const terminal of component.terminals) {
-                    for (const wire of terminal.connections) {
-                        this.deleteWire(wire);
-                    }
-                }
-                this.components.splice(index, 1);
-                group.destroy();
-                this.layer.draw();
+            if (pos.y + group.height() < 0 || pos.y > stage.height() || pos.x + group.width() < 0 || pos.x > stage.width()) {
+                this.deleteComponent(component);
                 return;
             }
 
@@ -108,8 +96,21 @@ class ComponentManager {
         });
 
         this.components.push(component);
-        component.addGroup(group);
         this.layer.add(group);
+        this.layer.draw();
+    }
+
+    deleteComponent(comp) {
+        const index = this.components.findIndex(item => item === comp);
+        if (index == -1) throw new Error("comp not in this.components!");
+        // remove wires attached to this component
+        for (const terminal of comp.terminals) {
+            for (const wire of terminal.connections) {
+                this.deleteWire(wire);
+            }
+        }
+        this.components.splice(index, 1);
+        comp.group.destroy();
         this.layer.draw();
     }
 
@@ -169,6 +170,22 @@ class ComponentManager {
         node.circle.on('click', () => {
             this.select(node);
         });
+    }
+
+    deleteNode(node) {
+        if (node.comp !== null) {
+            this.deleteComponent(node.comp);
+            return;
+        }
+        const index = this.nodes.findIndex(item => item === node);
+        if (index == -1) throw new Error("node not in this.nodes!");
+        // remove wires attached to this node
+        for (const wire of node.connections) {
+            this.deleteWire(wire);
+        }
+        this.nodes.splice(index, 1);
+        node.circle.destroy();
+        this.layer.draw();
     }
     
     // Ensure the position of every component is at a grid line intersection.
@@ -308,6 +325,19 @@ class ComponentManager {
         const selected = this.selected[0];
         this.deselectAll();
         this.select(selected);
+    }
+
+    deleteSelected() {
+        if (this.selected.length === 0) return;
+        const selected = this.selected[0];
+        if (selected instanceof Component) {
+            this.deleteComponent(selected);
+        } else if (selected instanceof Wire) {
+            this.deleteWire(selected);
+        } else if (selected instanceof Node) {
+            this.deleteNode(selected);
+        }
+        this.deselectAll();
     }
 }
 
