@@ -2,31 +2,13 @@ import { stage } from "./stage.js"
 import { grid } from "./grid.js";
 import { compManager } from "./compManager.js"
 
-// Class structure:
-// 
-// Component
-// - Grid Position (gx, gy)
-// - Grid Dimensions (gw, gh)
-// - Image
-// - Type (enum)
-// - Terminals (array of Terminal)
-// 
-// Resistor extends Component (gw = 3, gh = 2, Type = RESISTOR)
-// - resistance (ohms)
-// - power rating (watts)
-// 
-// Capacitor extends Component (gw = 4, gh = 2, Type = CAPACITOR)
-// - capacitance (microfarads)
-// - voltage rating (volts)
-// 
-// AndGate extends Component (gw = 5, gh = 4, Type = AND_GATE)
-//
-// ...
 
 // enum for component types
 export const ComponentType = {
-    VOLTAGE_SOURCE: 1000,
+    BATTERY: 1000,
     GROUND: 1001,
+    INPUT_BIT: 1002,
+    OUTPUT_BIT: 1003,
     RESISTOR: 2000,
     CAPACITOR: 2001,
     INDUCTOR: 2002,
@@ -366,7 +348,7 @@ export class Inductor extends Component {
                 stroke: 'black',
                 strokeWidth: sWidth,
             }),
-            // Hitbox for easier interaction
+            // Hitbox
             new Konva.Rect({
                 x: 0,
                 y: 0.5 * s,
@@ -374,6 +356,81 @@ export class Inductor extends Component {
                 height: s,
                 fill: 'transparent',
                 strokeWidth: 0,
+            }),
+        ];
+    }
+}
+
+export class Battery extends Component {
+    constructor(gx, gy) {
+        super(ComponentType.BATTERY, gx, gy, 4, 6);
+        this.voltage = 5; // Volts
+        this.maxCurrent = 0.5; // Amps
+        const s = grid.gridSize;
+        this.terminals = [
+            new Node(NodeType.OUTPUT, gx + 2, gy, this),
+            new Node(NodeType.INPUT, gx + 2, gy + 6, this),
+        ];
+        const sWidth = s / 12;
+        this.lines = [
+            // first lead
+            new Konva.Line({
+                points: [2 * s, 0, 2 * s, 0.8 * s],
+                stroke: 'black',
+                strokeWidth: sWidth,
+            }),
+            // hitbox
+            new Konva.Rect({
+                x: 0.8 * s,
+                y: 0.8 * s,
+                width: 2.4 * s,
+                height: 4.4 * s,
+                fill: 'white',
+                stroke: 'black',
+                strokeWidth: 0,
+            }),
+            // battery outline
+            new Konva.Line({
+                points: [
+                    0.8 * s, 0.8 * s,
+                    0.8 * s, 5.2 * s,
+                    3.2 * s, 5.2 * s,
+                    3.2 * s, 0.8 * s,
+                    0.8 * s, 0.8 * s,
+                ],
+                stroke: 'black',
+                lineCap: 'round',
+                lineJoin: 'round',
+                strokeWidth: sWidth,
+            }),
+            // Plus sign
+            new Konva.Line({
+                points: [
+                    1.5 * s, 1.6 * s,
+                    2.5 * s, 1.6 * s],
+                stroke: 'black',
+                strokeWidth: sWidth,
+            }),
+            new Konva.Line({
+                points: [
+                    2 * s, 1.1 * s,
+                    2 * s, 2.1 * s],
+                stroke: 'black',
+                strokeWidth: sWidth,
+            }),
+            // Minus sign
+            new Konva.Line({
+                points: [
+                    1.5 * s, 4.4 * s,
+                    2.5 * s, 4.4 * s],
+                stroke: 'black',
+                strokeWidth: sWidth,
+            }),
+            // second lead
+            new Konva.Line({
+                points: [2 * s, 6 * s, 2 * s, 5.2 * s],
+                stroke: 'black',
+                strokeWidth: sWidth,
             }),
         ];
     }

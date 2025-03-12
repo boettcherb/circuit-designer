@@ -1,7 +1,7 @@
 import { stage } from "./stage.js";
 import { grid } from "./grid.js";
 import { compManager } from "./compManager.js";
-import { Capacitor, Resistor, Inductor } from "./comp.js";
+import { Battery, Capacitor, Resistor, Inductor } from "./comp.js";
 
 grid.draw();
 compManager.addComponent(new Resistor(2, 2));
@@ -118,6 +118,9 @@ function toggleDropdown(id) {
 
 
 // If a component in the left sidebar is clicked, add it to the canvas.
+document.getElementById('battery-dropdown-item').addEventListener('click', () => {
+    compManager.addComponent(new Battery(2, 2));
+});
 document.getElementById('resistor-dropdown-item').addEventListener('click', () => {
     compManager.addComponent(new Resistor(2, 2));
 });
