@@ -34,7 +34,7 @@ class ComponentManager {
             
             terminal.circle.on('click', (e) => {
                 e.cancelBubble = true;
-                this.select(terminal);
+                this.select(component);
             });
         }
 
