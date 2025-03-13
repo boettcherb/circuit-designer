@@ -95,6 +95,7 @@ class ComponentManager {
 
     deleteComponent(comp) {
         if (!(comp instanceof Component)) throw new Error("comp is not a Component!");
+        if (comp === this.selected[0]) this.deselectAll();
         const index = this.components.findIndex(item => item === comp);
         if (index == -1) throw new Error("comp not in this.components!");
         // remove wires attached to this component
@@ -105,7 +106,6 @@ class ComponentManager {
         }
         this.components.splice(index, 1);
         comp.group.destroy();
-        if (comp === this.selected[0]) this.deselectAll();
         this.layer.draw();
     }
 
@@ -139,6 +139,7 @@ class ComponentManager {
 
     deleteWire(wire) {
         if (!(wire instanceof Wire)) throw new Error("wire is not a Wire!");
+        if (wire === this.selected[0]) this.deselectAll();
         // Remove the wire from the connections of the start and end nodes
         if (wire.startNode !== null) {
             wire.startNode.connections = wire.startNode.connections.filter(w => w !== wire)
@@ -149,7 +150,6 @@ class ComponentManager {
         // Remove the wire from the list of wires
         this.wires = this.wires.filter(w => w !== wire);
         wire.line.destroy();
-        if (wire === this.selected[0]) this.deselectAll();
         this.layer.draw();
     }
 
@@ -219,6 +219,8 @@ class ComponentManager {
     }
 
     deleteNode(node) {
+        if (!(node instanceof Node)) throw new Error("node is not a Node!");
+        if (node === this.selected[0]) this.deselectAll();
         if (node.comp !== null) {
             this.deleteComponent(node.comp);
             return;
@@ -231,7 +233,6 @@ class ComponentManager {
         }
         this.nodes.splice(index, 1);
         node.circle.destroy();
-        if (node === this.selected[0]) this.deselectAll();
         this.layer.draw();
     }
 
