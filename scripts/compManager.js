@@ -17,6 +17,7 @@ class ComponentManager {
     }
     
     addComponent(component) {
+        if (!(component instanceof Component)) throw new Error("component is not a Component!");
         const group = new Konva.Group({
             x: grid.offsetX + component.gx * grid.gridSize,
             y: grid.offsetY + component.gy * grid.gridSize,
@@ -32,7 +33,6 @@ class ComponentManager {
         }
         for (const terminal of component.terminals) {
             group.add(terminal.circle);
-            
             terminal.circle.on('click', (e) => {
                 e.cancelBubble = true;
                 this.select(component);
@@ -47,8 +47,7 @@ class ComponentManager {
                     if (terminal === wire.startNode) {
                         wire.line.points()[0] = group.x() + terminal.circle.x() * group.scaleX();
                         wire.line.points()[1] = group.y() + terminal.circle.y() * group.scaleY();
-                    } else {
-                        // terminal === wire.endNode
+                    } else { // terminal === wire.endNode
                         wire.line.points()[2] = group.x() + terminal.circle.x() * group.scaleX();
                         wire.line.points()[3] = group.y() + terminal.circle.y() * group.scaleY();
                     }
@@ -65,8 +64,7 @@ class ComponentManager {
                 return;
             }
 
-            // update gx and gy of this component and its terminals based on 
-            // where it was dragged
+            // update gx and gy of this component and its terminals based on where it was dragged
             const old_gx = component.gx;
             const old_gy = component.gy;
             component.gx = (group.x() - grid.offsetX) / grid.gridSize;
@@ -76,24 +74,19 @@ class ComponentManager {
                 terminal.gy += component.gy - old_gy;
             }
             this.layer.draw();
+
+            // merge nodes at the new grid position of the component
+            for (const terminal of component.terminals) {
+                this.mergeNodesAt(terminal.gx, terminal.gy);
+            }
         });
 
         // Prevent grid from dragging when the user is dragging a component
-        group.on('mousedown touchstart', (e) => {
-            e.cancelBubble = true;
-        });
+        group.on('mousedown touchstart', (e) => { e.cancelBubble = true; });
 
-        group.on('click', () => {
-            this.select(component);
-        });
-
-        group.on('mouseover', () => {
-            document.body.style.cursor = 'pointer';
-        });
-
-        group.on('mouseout', () => {
-          document.body.style.cursor = 'default';
-        });
+        group.on('click', () => { this.select(component); });
+        group.on('mouseover', () => { document.body.style.cursor = 'pointer'; });
+        group.on('mouseout', () => { document.body.style.cursor = 'default'; });
 
         this.components.push(component);
         this.layer.add(group);
@@ -101,6 +94,7 @@ class ComponentManager {
     }
 
     deleteComponent(comp) {
+        if (!(comp instanceof Component)) throw new Error("comp is not a Component!");
         const index = this.components.findIndex(item => item === comp);
         if (index == -1) throw new Error("comp not in this.components!");
         // remove wires attached to this component
@@ -111,27 +105,40 @@ class ComponentManager {
         }
         this.components.splice(index, 1);
         comp.group.destroy();
+        if (comp === this.selected[0]) this.deselectAll();
         this.layer.draw();
     }
 
     addWire(wire) {
+        if (!(wire instanceof Wire)) throw new Error("wire is not a Wire!");
         this.wires.push(wire);
         this.layer.add(wire.line);
         wire.line.moveToBottom();
         this.layer.draw();
-        wire.line.on('mouseover', () => {
-            document.body.style.cursor = 'pointer';
-        });
-        wire.line.on('mouseout', () => {
-          document.body.style.cursor = 'default';
-        });
+        wire.line.on('mouseover', () => { document.body.style.cursor = 'pointer'; });
+        wire.line.on('mouseout', () => { document.body.style.cursor = 'default'; });
         wire.line.on('click', (e) => {
             e.cancelBubble = true;
             this.select(wire);
         });
     }
 
+    createWire(startNode, endNode) {
+        if (!(startNode instanceof Node)) throw new Error("startNode is not a Node!");
+        if (!(endNode instanceof Node)) throw new Error("endNode is not a Node!");
+        if (startNode === endNode) throw new Error("startNode and endNode are the same!");
+        if (startNode.hasWireTo(endNode)) throw new Error("Wire already exists between startNode and endNode!");
+        const wire = new Wire(startNode, ...startNode.getPos());
+        wire.line.points([wire.line.points()[0], wire.line.points()[1], ...endNode.getPos()]);
+        wire.endNode = endNode;
+        startNode.connections.push(wire);
+        endNode.connections.push(wire);
+        this.addWire(wire);
+    }
+
+
     deleteWire(wire) {
+        if (!(wire instanceof Wire)) throw new Error("wire is not a Wire!");
         // Remove the wire from the connections of the start and end nodes
         if (wire.startNode !== null) {
             wire.startNode.connections = wire.startNode.connections.filter(w => w !== wire)
@@ -142,34 +149,73 @@ class ComponentManager {
         // Remove the wire from the list of wires
         this.wires = this.wires.filter(w => w !== wire);
         wire.line.destroy();
+        if (wire === this.selected[0]) this.deselectAll();
         this.layer.draw();
     }
 
-    // Get the node at the grid position (gx, gy). If no node exists at that
-    // position, return null
-    getNode(gx, gy) {
+    // Get a list of nodes at the grid position (gx, gy).
+    getNodesAt(gx, gy) {
+        const nodes = [];
         for (const node of this.nodes) {
-            if (node.gx === gx && node.gy === gy) {
-                return node;
-            }
+            if (node.gx === gx && node.gy === gy) nodes.push(node);
         }
         for (const comp of this.components) {
             for (const terminal of comp.terminals) {
-                if (terminal.gx === gx && terminal.gy === gy) {
-                    return terminal;
-                }
+                if (terminal.gx === gx && terminal.gy === gy) nodes.push(terminal);
             }
         }
-        return null;
+        return nodes;
+    }
+
+    mergeNodesAt(gx, gy) {
+        const nodes = this.getNodesAt(gx, gy);
+        if (nodes.length < 2) return;
+        let toDelete = null;
+        for (const node of nodes) {
+            if (node.comp === null) {
+                toDelete = node;
+                break;
+            }
+        }
+        if (toDelete === null) {
+            for (const n1 of nodes) {
+                if (n1.comp === null) throw new Error("n1 should be tied to a component!");
+                let isIsolated = true;
+                for (const n2 of nodes) {
+                    if (n1 !== n2 && n1.hasWireTo(n2)) {
+                        isIsolated = false;
+                        break;
+                    }
+                }
+                if (isIsolated) {
+                    this.createWire(n1, nodes[0] === n1 ? nodes[1] : nodes[0]);
+                    this.reselect();
+                    return;
+                }
+            }
+            return;
+        }
+        const otherNode = nodes[0] === toDelete ? nodes[1] : nodes[0];
+        for (const wire of toDelete.connections) {
+            if (wire.startNode === toDelete) wire.startNode = otherNode;
+            else wire.endNode = otherNode;
+            if (wire.startNode === wire.endNode) {
+                this.deleteWire(wire);
+                continue;
+            }
+            otherNode.connections.push(wire);
+        }
+        toDelete.connections = [];
+        this.deleteNode(toDelete);
+        this.reselect();
     }
 
     addNode(node) {
+        if (!(node instanceof Node)) throw new Error("node is not a Node!");
         this.nodes.push(node);
         this.layer.add(node.circle);
         this.layer.draw();
-        node.circle.on('click', () => {
-            this.select(node);
-        });
+        node.circle.on('click', () => { this.select(node); });
     }
 
     deleteNode(node) {
@@ -185,9 +231,10 @@ class ComponentManager {
         }
         this.nodes.splice(index, 1);
         node.circle.destroy();
+        if (node === this.selected[0]) this.deselectAll();
         this.layer.draw();
     }
-    
+
     // Ensure the position of every component is at a grid line intersection.
     // This is called whenever the grid is moved or scaled, or when
     // the comp's grid position (gx, gy) is updated.
@@ -197,11 +244,7 @@ class ComponentManager {
             comp.group.y(grid.offsetY + comp.gy * grid.gridSize);
         }
         for (const wire of this.wires) {
-            const x1 = grid.offsetX + wire.startNode.gx * grid.gridSize;
-            const y1 = grid.offsetY + wire.startNode.gy * grid.gridSize;
-            const x2 = grid.offsetX + wire.endNode.gx * grid.gridSize;
-            const y2 = grid.offsetY + wire.endNode.gy * grid.gridSize;
-            wire.line.points([x1, y1, x2, y2]);
+            wire.line.points([...wire.startNode.getPos(), ...wire.endNode.getPos()]);
         }
         for (const node of this.nodes) {
             node.circle.x(grid.offsetX + node.gx * grid.gridSize);
@@ -322,21 +365,17 @@ class ComponentManager {
 
     reselect() {
         if (this.selected.length === 0) return;
-        const selected = this.selected[0];
+        const s = this.selected[0];
         this.deselectAll();
-        this.select(selected);
+        this.select(s);
     }
 
     deleteSelected() {
         if (this.selected.length === 0) return;
-        const selected = this.selected[0];
-        if (selected instanceof Component) {
-            this.deleteComponent(selected);
-        } else if (selected instanceof Wire) {
-            this.deleteWire(selected);
-        } else if (selected instanceof Node) {
-            this.deleteNode(selected);
-        }
+        const s = this.selected[0];
+        if (s instanceof Component) this.deleteComponent(s);
+        else if (s instanceof Wire) this.deleteWire(s);
+        else if (s instanceof Node) this.deleteNode(s);
         this.deselectAll();
     }
 }

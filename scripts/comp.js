@@ -84,9 +84,7 @@ export class Node {
                     this.circle.startDrag();
                 }
             } else { // left click
-                const xpos = grid.offsetX + this.gx * grid.gridSize;
-                const ypos = grid.offsetY + this.gy * grid.gridSize;
-                this.createWire(xpos, ypos);
+                this.createWire(...this.getPos());
             }
         });
 
@@ -110,6 +108,7 @@ export class Node {
 
         this.circle.on('dragend', () => {
             this.circle.draggable(false);
+            compManager.mergeNodesAt(this.gx, this.gy);
         })
 
         this.circle.on('mouseover', () => { document.body.style.cursor = 'pointer'; });
@@ -137,8 +136,8 @@ export class Node {
             if (this.gx == gx2 && this.gy == gy2) {
                 compManager.deleteWire(wire);
             } else {
-                let endNode = compManager.getNode(gx2, gy2);
-                if (endNode === null) {
+                let endNode = compManager.getNodesAt(gx2, gy2)[0];
+                if (endNode === undefined) {
                     endNode = new Node(NodeType.WIRE, gx2, gy2, null)
                     compManager.addNode(endNode);
                 }
@@ -147,6 +146,20 @@ export class Node {
             }            
             compManager.reselect();
         });
+    }
+
+    hasWireTo(node) {
+        for (const wire of this.connections) {
+            if (wire.startNode === node || wire.endNode === node) return true;
+        }
+        return false;
+    }
+
+    getPos() {
+        return [
+            this.gx * grid.gridSize + grid.offsetX,
+            this.gy * grid.gridSize + grid.offsetY,
+        ];
     }
 }
 
