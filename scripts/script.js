@@ -13,6 +13,11 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// handle menu button presses
+document.getElementById('clear-all-button').addEventListener('click', () => {
+    compManager.clearAll();
+});
+
 // Handle window resizing
 window.addEventListener('resize', () => {
     stage.width(window.innerWidth);

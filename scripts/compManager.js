@@ -379,6 +379,17 @@ class ComponentManager {
         else if (s instanceof Node) this.deleteNode(s);
         this.deselectAll();
     }
+
+    clearAll() {
+        for (const comp of this.components) comp.group.destroy();
+        for (const wire of this.wires) wire.line.destroy();
+        for (const node of this.nodes) node.circle.destroy();
+        this.components = [];
+        this.wires = [];
+        this.nodes = [];
+        this.selected = [];
+        this.layer.draw();
+    }
 }
 
 export const compManager = new ComponentManager();
