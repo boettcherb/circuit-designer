@@ -2,10 +2,8 @@ import { grid } from "./grid.js";
 import { stage } from "./stage.js";
 import { Component, Wire, Node } from "./comp.js";
 
-class ComponentManager {
+export class Circuit {
     constructor() {
-        this.layer = new Konva.Layer();
-        stage.add(this.layer);
         this.components = [];
         this.wires = [];
         this.nodes = []; // nodes not tied to components
@@ -14,6 +12,9 @@ class ComponentManager {
         // The other elements (index > 0) are the wires and nodes
         // connected to (shorted to) the selected component.
         this.selected = [];
+
+        this.layer = new Konva.Layer();
+        stage.add(this.layer);
     }
     
     addComponent(component) {
@@ -391,5 +392,3 @@ class ComponentManager {
         this.layer.draw();
     }
 }
-
-export const compManager = new ComponentManager();
