@@ -130,6 +130,7 @@ export class Circuit {
         if (!(endNode instanceof Node)) throw new Error("endNode is not a Node!");
         if (startNode === endNode) throw new Error("startNode and endNode are the same!");
         if (startNode.hasWireTo(endNode)) throw new Error("Wire already exists between startNode and endNode!");
+
         const wire = new Wire(startNode, ...startNode.getPos());
         wire.line.points([wire.line.points()[0], wire.line.points()[1], ...endNode.getPos()]);
         wire.endNode = endNode;
@@ -143,12 +144,10 @@ export class Circuit {
         if (!(wire instanceof Wire)) throw new Error("wire is not a Wire!");
         if (wire === this.selected[0]) this.deselectAll();
         // Remove the wire from the connections of the start and end nodes
-        if (wire.startNode !== null) {
+        if (wire.startNode !== null)
             wire.startNode.connections = wire.startNode.connections.filter(w => w !== wire)
-        }
-        if (wire.endNode !== null) {
+        if (wire.endNode !== null)
             wire.endNode.connections = wire.endNode.connections.filter(w => w !== wire)
-        }
         // Remove the wire from the list of wires
         this.wires = this.wires.filter(w => w !== wire);
         wire.line.destroy();
@@ -230,9 +229,8 @@ export class Circuit {
         const index = this.nodes.findIndex(item => item === node);
         if (index == -1) throw new Error("node not in this.nodes!");
         // remove wires attached to this node
-        for (const wire of node.connections) {
+        for (const wire of node.connections)
             this.deleteWire(wire);
-        }
         this.nodes.splice(index, 1);
         node.circle.destroy();
         this.layer.draw();
