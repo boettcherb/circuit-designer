@@ -1,6 +1,6 @@
 import { stage } from "./stage.js"
 import { grid } from "./grid.js";
-import { compManager } from "./compManager.js"
+import { circuitManager } from "./circuitManager.js";
 
 
 // enum for component types
@@ -103,12 +103,12 @@ export class Node {
                     wire.line.points()[3] = pos.y;
                 }
             }
-            compManager.layer.draw();
+            circuitManager.selectedCircuit.layer.draw();
         });
 
         this.circle.on('dragend', () => {
             this.circle.draggable(false);
-            compManager.mergeNodesAt(this.gx, this.gy);
+            circuitManager.selectedCircuit.mergeNodesAt(this.gx, this.gy);
         })
 
         this.circle.on('mouseover', () => { document.body.style.cursor = 'pointer'; });
@@ -116,9 +116,10 @@ export class Node {
     }
     
     createWire(startX, startY) {
+        const circuit = circuitManager.selectedCircuit;
         const wire = new Wire(this, startX, startY);
         this.connections.push(wire);
-        compManager.addWire(wire, startX, startY);
+        circuit.addWire(wire, startX, startY);
 
         // Update wire endpoint on mousemove
         stage.on('mousemove.wire', () => {
@@ -134,17 +135,17 @@ export class Node {
             const gy2 = this.gy + (wire.line.points()[3] - startY) / grid.gridSize;
             // if the created wire is length 0, delete it
             if (this.gx == gx2 && this.gy == gy2) {
-                compManager.deleteWire(wire);
+                circuit.deleteWire(wire);
             } else {
-                let endNode = compManager.getNodesAt(gx2, gy2)[0];
+                let endNode = circuit.getNodesAt(gx2, gy2)[0];
                 if (endNode === undefined) {
                     endNode = new Node(NodeType.WIRE, gx2, gy2, null)
-                    compManager.addNode(endNode);
+                    circuit.addNode(endNode);
                 }
                 wire.endNode = endNode;
                 endNode.connections.push(wire);
             }            
-            compManager.reselect();
+            circuit.reselect();
         });
     }
 

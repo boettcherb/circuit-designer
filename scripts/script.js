@@ -1,21 +1,20 @@
 import { stage } from "./stage.js";
 import { grid } from "./grid.js";
-import { compManager } from "./compManager.js";
+import { circuitManager } from "./circuitManager.js";
 import { Battery, Capacitor, Resistor, Inductor } from "./comp.js";
 
 grid.draw();
-compManager.addComponent(new Resistor(2, 2));
 
 // Handle key presses
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Delete') {
-        compManager.deleteSelected();
+        circuitManager.selectedCircuit.deleteSelected();
     }
 });
 
 // handle menu button presses
 document.getElementById('clear-all-button').addEventListener('click', () => {
-    compManager.clearAll();
+    circuitManager.selectedCircuit.clearAll();
 });
 
 // Handle window resizing
@@ -35,7 +34,7 @@ let click = false;
 stage.on('click', () => {
     if (click) {
         click = false;
-        compManager.deselectAll();
+        circuitManager.selectedCircuit.deselectAll();
     }
 });
 
@@ -58,7 +57,7 @@ stage.on('mousemove touchmove', () => {
     
     grid.updateOffset(dx, dy);
     grid.draw();
-    compManager.repositionComps();
+    circuitManager.selectedCircuit.repositionComps();
 });
 stage.on('mouseup touchend', () => {
     grid.isDragging = false;
@@ -87,7 +86,7 @@ stage.on('wheel', (e) => {
         // If the origin has changed, update all components' gw and gh values
         // (this will not actually move the components or update their positions
         // relative to the screen).
-        compManager.handleGridOriginUpdate(oldOrigin);
+        circuitManager.selectedCircuit.handleGridOriginUpdate(oldOrigin);
     }
 
     // calculate the new grid size
@@ -102,8 +101,8 @@ stage.on('wheel', (e) => {
     grid.draw();
 
     // reposition and scale the components
-    compManager.repositionComps();
-    compManager.scaleComps(oldGridSize);
+    circuitManager.selectedCircuit.repositionComps();
+    circuitManager.selectedCircuit.scaleComps(oldGridSize);
 
     setTimeout(() => { throttle = false }, GRID_RESIZE_TIMEOUT);
 });
@@ -131,14 +130,14 @@ function toggleDropdown(id) {
 
 // If a component in the left sidebar is clicked, add it to the canvas.
 document.getElementById('battery-dropdown-item').addEventListener('click', () => {
-    compManager.addComponent(new Battery(2, 2));
+    circuitManager.selectedCircuit.addComponent(new Battery(2, 2));
 });
 document.getElementById('resistor-dropdown-item').addEventListener('click', () => {
-    compManager.addComponent(new Resistor(2, 2));
+    circuitManager.selectedCircuit.addComponent(new Resistor(2, 2));
 });
 document.getElementById('capacitor-dropdown-item').addEventListener('click', () => {
-    compManager.addComponent(new Capacitor(2, 2));
+    circuitManager.selectedCircuit.addComponent(new Capacitor(2, 2));
 });
 document.getElementById('inductor-dropdown-item').addEventListener('click', () => {
-    compManager.addComponent(new Inductor(2, 2));
+    circuitManager.selectedCircuit.addComponent(new Inductor(2, 2));
 });

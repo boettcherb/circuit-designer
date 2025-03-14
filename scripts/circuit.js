@@ -3,7 +3,8 @@ import { stage } from "./stage.js";
 import { Component, Wire, Node } from "./comp.js";
 
 export class Circuit {
-    constructor() {
+    constructor(name) {
+        this.name = name;
         this.components = [];
         this.wires = [];
         this.nodes = []; // nodes not tied to components
