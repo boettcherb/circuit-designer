@@ -1,6 +1,6 @@
 import { grid } from "./grid.js";
 import { stage } from "./stage.js";
-import { Component, Wire, Node } from "./comp.js";
+import { Component, Wire, Node, NodeType } from "./comp.js";
 
 export class Circuit {
     constructor(name) {
@@ -16,6 +16,21 @@ export class Circuit {
 
         this.layer = new Konva.Layer();
         stage.add(this.layer);
+    }
+
+    // Load a circuit from a JSON object.
+    build(data) {
+        for (const comp of data.comps) {
+            this.addComponent(Component.createComponent(comp, this));
+        }
+        for (const node of data.nodes) {
+            this.addNode(new Node(NodeType.WIRE, node.x, node.y, null, this));
+        }
+        for (const wire of data.wires) {
+            let startNode = Array.isArray(wire.s) ? this.components[wire.s[0]].terminals[wire.s[1]] : this.nodes[wire.s];
+            let endNode = Array.isArray(wire.e) ? this.components[wire.e[0]].terminals[wire.e[1]] : this.nodes[wire.e];
+            this.createWire(startNode, endNode);
+        }
     }
     
     addComponent(component) {

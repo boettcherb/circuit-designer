@@ -1,6 +1,5 @@
 import { stage } from "./stage.js"
 import { grid } from "./grid.js";
-import { circuitManager } from "./circuitManager.js";
 
 
 // enum for component types
@@ -53,7 +52,7 @@ export class Wire {
 
 
 export class Node {
-    constructor(type, gx, gy, comp) {
+    constructor(type, gx, gy, comp, circuit) {
         if (comp === null && type !== NodeType.WIRE) throw new Error("Invalid node (1)");
         if (comp !== null && type === NodeType.WIRE) throw new Error("Invalid node (2)");
         this.type = type;
@@ -61,6 +60,7 @@ export class Node {
         this.gy = gy;
         this.comp = comp;
         this.connections = []; // wires connected to this node
+        this.circuit = circuit;
 
         // If this node is tied to a component, then comp is not null and the offset of this node is
         // relative to the component. If this node is NOT tied to a component, then comp is null and
@@ -103,12 +103,12 @@ export class Node {
                     wire.line.points()[3] = pos.y;
                 }
             }
-            circuitManager.selectedCircuit.layer.draw();
+            this.circuit.layer.draw();
         });
 
         this.circle.on('dragend', () => {
             this.circle.draggable(false);
-            circuitManager.selectedCircuit.mergeNodesAt(this.gx, this.gy);
+            this.circuit.mergeNodesAt(this.gx, this.gy);
         })
 
         this.circle.on('mouseover', () => { document.body.style.cursor = 'pointer'; });
@@ -116,10 +116,9 @@ export class Node {
     }
     
     createWire(startX, startY) {
-        const circuit = circuitManager.selectedCircuit;
         const wire = new Wire(this, startX, startY);
         this.connections.push(wire);
-        circuit.addWire(wire, startX, startY);
+        this.circuit.addWire(wire, startX, startY);
 
         // Update wire endpoint on mousemove
         stage.on('mousemove.wire', () => {
@@ -135,17 +134,17 @@ export class Node {
             const gy2 = this.gy + (wire.line.points()[3] - startY) / grid.gridSize;
             // if the created wire is length 0, delete it
             if (this.gx == gx2 && this.gy == gy2) {
-                circuit.deleteWire(wire);
+                this.circuit.deleteWire(wire);
             } else {
-                let endNode = circuit.getNodesAt(gx2, gy2)[0];
+                let endNode = this.circuit.getNodesAt(gx2, gy2)[0];
                 if (endNode === undefined) {
-                    endNode = new Node(NodeType.WIRE, gx2, gy2, null)
-                    circuit.addNode(endNode);
+                    endNode = new Node(NodeType.WIRE, gx2, gy2, null, this.circuit);
+                    this.circuit.addNode(endNode);
                 }
                 wire.endNode = endNode;
                 endNode.connections.push(wire);
             }            
-            circuit.reselect();
+            this.circuit.reselect();
         });
     }
 
@@ -188,18 +187,35 @@ export class Component {
             node.gy += dy;
         }
     }
+
+    getTerminalIndex(node) {
+        const index = this.terminals.indexOf(node);
+        if (index === -1) throw new Error('Node is not a terminal of this component');
+        return index;
+    }
+
+    static createComponent(data, circuit) {
+        switch (data.t) {
+            case ComponentType.BATTERY: return new Battery(data.x, data.y, circuit);
+            case ComponentType.RESISTOR: return new Resistor(data.x, data.y, circuit);
+            case ComponentType.CAPACITOR: return new Capacitor(data.x, data.y, circuit);
+            case ComponentType.INDUCTOR: return new Inductor(data.x, data.y, circuit);
+            default:
+                throw new Error('Invalid component type');
+        }
+    }
 }
 
 
 export class Resistor extends Component {
-    constructor(gx, gy) {
+    constructor(gx, gy, circuit) {
         super(ComponentType.RESISTOR, gx, gy, 3, 2);
         this.resistance = 1000; // Ohms
         this.powerRating = 0.25; // Watts
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this),
-            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this),
+            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this, circuit),
         ];
         const sWidth = s / 12;
         this.lines = [
@@ -249,18 +265,28 @@ export class Resistor extends Component {
             }),
         ];
     }
+
+    serialize() {
+        return {
+            type: this.type,
+            gx: this.gx,
+            gy: this.gy,
+            resistance: this.resistance,
+            powerRating: this.powerRating,
+        }
+    }
 }
 
 
 export class Capacitor extends Component {
-    constructor(gx, gy) {
+    constructor(gx, gy, circuit) {
         super(ComponentType.CAPACITOR, gx, gy, 3, 2);
         this.capacitance = 1; // Microfarads
         this.voltageRating = 5; // Volts
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this),
-            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this),
+            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this, circuit),
         ];
         const sWidth = s / 12;
         this.lines = [
@@ -311,17 +337,27 @@ export class Capacitor extends Component {
             }),
         ];
     }
+
+    serialize() {
+        return {
+            t: this.type,
+            x: this.gx,
+            y: this.gy,
+            capacitance: this.capacitance,
+            voltageRating: this.voltageRating,
+        }
+    }
 }
 
 
 export class Inductor extends Component {
-    constructor(gx, gy) {
+    constructor(gx, gy, circuit) {
         super(ComponentType.INDUCTOR, gx, gy, 3, 2);
         this.inductance = 1; // Henries
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this),
-            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this),
+            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this, circuit),
         ];
         const sWidth = s / 12;
         this.lines = [
@@ -373,17 +409,26 @@ export class Inductor extends Component {
             }),
         ];
     }
+
+    serialize() {
+        return {
+            type: this.type,
+            gx: this.gx,
+            gy: this.gy,
+            inductance: this.inductance,
+        }
+    }
 }
 
 export class Battery extends Component {
-    constructor(gx, gy) {
+    constructor(gx, gy, circuit) {
         super(ComponentType.BATTERY, gx, gy, 4, 6);
         this.voltage = 5; // Volts
         this.maxCurrent = 0.5; // Amps
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.OUTPUT, gx + 2, gy, this),
-            new Node(NodeType.INPUT, gx + 2, gy + 6, this),
+            new Node(NodeType.OUTPUT, gx + 2, gy, this, circuit),
+            new Node(NodeType.INPUT, gx + 2, gy + 6, this, circuit),
         ];
         const sWidth = s / 12;
         this.lines = [
@@ -447,5 +492,15 @@ export class Battery extends Component {
                 strokeWidth: sWidth,
             }),
         ];
+    }
+
+    serialize() {
+        return {
+            type: this.type,
+            gx: this.gx,
+            gy: this.gy,
+            voltage: this.voltage,
+            maxCurrent: this.maxCurrent,
+        }
     }
 }
