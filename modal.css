@@ -1,0 +1,85 @@
+.modal-background {
+    display: none;   /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 100;    /* Display on top */
+    width: 100%;     /* Cover the whole screen */
+    height: 100%;    /* Cover the whole screen */
+    top: 0;          /* 0px from the top */
+    left: 0;         /* 0px from the left */
+    background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
+}
+
+.modal {
+    background-color:   #fff; /* White background */
+    width: 80vw;              /* Fixed width (80% of viewport width) */
+    max-width: 600px;         /* Max width of 600px */
+    max-height: 60vh;         /* Max height of 60% of viewport height */
+    margin: 20vh auto;        /* 20% top and bottom margin, center horizontally */
+    padding: 20px;            /* Padding inside the modal */
+    display: flex;            /* Use flexbox layout */
+    flex-direction: column;   /* Use vertical axis in flexbox layout */
+}
+
+.modal-header {
+    display: flex;                  /* Use flexbox layout with horizontal axis */
+    justify-content: space-between; /* Put extra space between h2 and close button */
+    align-items: center;            /* Center flexbox items vertically */
+}
+
+.modal h1 {
+    margin: 10px;   /* 10px margin all around the h2 */
+}
+
+.close-button {
+    font-size: 35px;     /* Large font size */
+    font-weight: bold;   /* Bold text */
+    cursor: pointer;     /* Cursor on hover */
+}
+
+.close-button:hover {
+    background-color: #e00;   /* Red background on hover */
+}
+
+#my-circuits-list {
+    overflow-y: auto;  /* Scroll if content is too tall */
+    margin: 20px 0;    /* 20px margin top and bottom, 0 left and right */
+    padding: 0 20px;   /* 0 padding top and bottom, 20px left and right */
+  }
+
+#my-circuits-list li {
+    display: flex;                  /* Use flexbox layout with horizontal axis */
+    align-items: center;            /* Center flexbox items vertically */
+    justify-content: space-between; /* Put extra space between name and buttons */
+    padding: 15px 10px;             /* 15px padding top and bottom, 10px left and right */
+    border-bottom: 1px solid #bbb;  /* 1px line in between list items */
+}
+
+.circuit-name {
+    font-size: 20px;     /* Large font size */
+}
+
+.circuitlist-delete-button {
+    padding: 5px 8px;           /* 5px padding top and bottom, 8px left and right */
+    font-size: 12px;            /* Small font size */
+    cursor: pointer;            /* Cursor on hover */
+    background-color: #DC143C;  /* Red background */
+    border: none;               /* No border */
+    color: white;             /* White text */
+}
+
+.circuitlist-delete-button:hover {
+    background-color: #b10d2b;      /* Slightly darker background on hover */
+}
+
+#add-circuit-button {
+    background-color: #29ee29;  /* Green background */
+    border: none;               /* No border */
+    width: 100px;               /* Fixed width of 100px */
+    padding: 8px;               /* 8px padding all around */
+    margin: 5px auto;           /* 5px top and bottom margin, center horizontally */
+    cursor: pointer;
+}
+
+#add-circuit-button:hover {
+    background-color: #1fbb1f;  /* Slightly darker background on hover */
+}

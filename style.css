@@ -41,7 +41,10 @@ body {
     font-size: 14px;
     transition: background-color 0.2s ease;
 }
-.tab-button:hover { background-color: #bbb; }
+
+.tab-button:hover {
+    background-color: #bbb;
+}
 
 .dropdown-content {
     display: none;
@@ -60,6 +63,7 @@ body {
     font-size: 12px;
     transition: background-color 0.2s ease;
 }
+
 .dropdown-item:hover {
     background-color: #e0e0e0;
 }
@@ -89,55 +93,11 @@ body {
     font-size: 16px;
     cursor: pointer;
 }
-.menu-btn:hover { background-color: #2980b9; }
-.menu-btn:active { background-color: #2471a3; }
 
-/* Modal container */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 100; /* On top */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
+.menu-btn:hover {
+    background-color: #2980b9;
 }
-/* Modal content box */
-.modal-content {
-    background-color: #fefefe;
-    margin: 10% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 600px;
-}
-/* Close button (the X) */
-.close {
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-/* Optional: style for each circuit list item */
-#my-circuits-list li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 8px 0;
-    padding: 4px;
-    border-bottom: 1px solid #ddd;
-}
-/* Style for the circuit name (clickable) */
-.circuit-name {
-    cursor: pointer;
-    flex-grow: 1;
-}
-/* Style for the management buttons */
-.circuit-btn {
-    margin-left: 4px;
-    padding: 4px 8px;
-    font-size: 12px;
-    cursor: pointer;
+
+.menu-btn:active {
+    background-color: #2471a3;
 }

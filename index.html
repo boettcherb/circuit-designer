@@ -6,6 +6,7 @@
     <title>Circuit Designer</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="modal.css">
 </head>
 <body>
     <div id="top-bar">
@@ -13,11 +14,14 @@
         <button id="my-circuits-button" class="menu-btn">My Circuits</button>
         <div>Options</div>
     </div>
-    <div id="my-circuits-modal" class="modal">
-        <div class="modal-content">
-            <span id="close-my-circuits-button" class="close">&times;</span>
-            <h2>My Circuits</h2>
+    <div id="my-circuits-modal" class="modal-background">
+        <div class="modal">
+            <div class="modal-header">
+                <h1>My Circuits</h1>
+                <span id="close-my-circuits-button" class="close-button">&times;</span>
+            </div>
             <ul id="my-circuits-list"></ul>
+            <button id="add-circuit-button">Add Circuit</button>
         </div>
     </div>
     
