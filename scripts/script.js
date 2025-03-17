@@ -108,7 +108,6 @@ stage.on('mouseup touchend', () => {
     grid.isDragging = false;
 });
 
-
 // Scroll wheel event handler. Resize the grid squares (increase when zooming
 // in, decrease when zooming out). This function is throttled to only run
 // every 30 milliseconds to prevent scrolling too fast.
@@ -152,26 +151,13 @@ stage.on('wheel', (e) => {
     setTimeout(() => { throttle = false }, GRID_RESIZE_TIMEOUT);
 });
 
-
-// Add event listeners for the dropdown buttons on the left sidebar.
-document.getElementById('io-dropdown-btn').addEventListener('click', () => {
-    toggleDropdown('io');
-});
-document.getElementById('basic-components-dropdown-btn').addEventListener('click', () => {
-    toggleDropdown('basic-components');
-});
-document.getElementById('logic-gates-dropdown-btn').addEventListener('click', () => {
-    toggleDropdown('logic-gates');
-});
-
-
-// The user just clicked on the dropdown with the given id. If this dropdown
-// was already open, close it. Otherwise, open it.
-function toggleDropdown(id) {
-    const dropdown = document.getElementById(id);
-    dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+// Handle the sidebar dropdowns
+for (const sidebarBtn of document.getElementsByClassName('sidebar-btn')) {
+    sidebarBtn.addEventListener('click', (e) => {
+        const dropdown = e.target.nextElementSibling;
+        dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+    });
 }
-
 
 // If a component in the left sidebar is clicked, add it to the canvas.
 document.getElementById('battery-dropdown-item').addEventListener('click', () => {
