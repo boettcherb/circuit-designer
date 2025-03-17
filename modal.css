@@ -30,14 +30,14 @@
     margin: 10px;   /* 10px margin all around the h2 */
 }
 
-.close-button {
+.close-btn {
     font-size: 35px;     /* Large font size */
     font-weight: bold;   /* Bold text */
-    cursor: pointer;     /* Cursor on hover */
+    cursor: pointer;     /* Change cursor to pointer on hover */
 }
 
-.close-button:hover {
-    background-color: #e00;   /* Red background on hover */
+.close-btn:hover {
+    background-color: #e00;   /* Add a red background on hover */
 }
 
 #my-circuits-list {
@@ -49,8 +49,8 @@
 #my-circuits-list li {
     display: flex;                  /* Use flexbox layout with horizontal axis */
     align-items: center;            /* Center flexbox items vertically */
-    justify-content: space-between; /* Put extra space between name and buttons */
-    padding: 15px 10px;             /* 15px padding top and bottom, 10px left and right */
+    justify-content: space-between; /* Put all extra space between name and buttons */
+    padding: 15px;                  /* 15px padding on all sides */
     border-bottom: 1px solid #bbb;  /* 1px line in between list items */
 }
 
@@ -58,7 +58,7 @@
     font-size: 20px;     /* Large font size */
 }
 
-.circuitlist-delete-button {
+.circuitlist-delete-btn {
     padding: 5px 8px;           /* 5px padding top and bottom, 8px left and right */
     font-size: 12px;            /* Small font size */
     cursor: pointer;            /* Cursor on hover */
@@ -67,11 +67,11 @@
     color: white;             /* White text */
 }
 
-.circuitlist-delete-button:hover {
+.circuitlist-delete-btn:hover {
     background-color: #b10d2b;      /* Slightly darker background on hover */
 }
 
-#add-circuit-button {
+#add-circuit-btn {
     background-color: #29ee29;  /* Green background */
     border: none;               /* No border */
     width: 100px;               /* Fixed width of 100px */
@@ -80,6 +80,10 @@
     cursor: pointer;
 }
 
-#add-circuit-button:hover {
+#add-circuit-btn:hover {
     background-color: #1fbb1f;  /* Slightly darker background on hover */
+}
+
+.selected-circuit {
+    background-color: #f0f0f0;  /* Light gray background */
 }

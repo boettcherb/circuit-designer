@@ -1,103 +1,92 @@
 body {
-    margin: 0;
-    display: grid;
-    grid-template-rows: 40px auto;
-    height: 100vh;
-    overflow: hidden;
+    margin: 0;                         /* Remove default margin */
+    display: grid;                     /* Use CSS Grid (2x2) */
+    grid-template-rows: 40px auto;     /* 2 rows: first is 40px, second fills remaining space */
+    grid-template-columns: 200px auto; /* 2 cols: first is 200px, second fills remaining space */
+    height: 100vh;                     /* Take up full height of screen */
+    overflow: hidden;                  /* Prevent scrolling/scroll bars */
 }
 
-#top-bar {
-    grid-column: span 2;
-    background-color: #333;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 10px;
-}
-
-#left-panel {
-    width: 200px;
-    background-color: #f4f4f4;
-    border-right: 1px solid #ccc;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    padding: 10px 0;
-}
-
-.sidebar-tab {
-    margin-bottom: 10px;
-}
-
-.tab-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #ddd;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    text-align: left;
-    font-size: 14px;
-    transition: background-color 0.2s ease;
-}
-
-.tab-button:hover {
-    background-color: #bbb;
-}
-
-.dropdown-content {
-    display: none;
-    flex-direction: column;
-    padding-left: 10px;
-    margin-top: 5px;
-    gap: 5px;
-}
-
-.dropdown-item {
-    padding: 5px 10px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.2s ease;
-}
-
-.dropdown-item:hover {
-    background-color: #e0e0e0;
-}
-
-#canvas-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f9f9f9;
-    overflow: hidden;
-}
-
-#canvas {
-    width: 100%;
-    height: 100%;
-    background-color: #fff;
-    border: 1px solid #ccc;
+#menu-bar {
+    grid-column: span 2;     /* Span both columns */
+    background-color: #333;  /* Dark background color */
+    color: #fff;             /* Light text color */
+    display: flex;           /* Use flexbox layout (horizontal axis */
+    align-items: center;     /* Center items vertically */
+    padding-left: 10px;      /* Add padding to the left */
 }
 
 .menu-btn {
-    background-color: #3498db;
-    border: none;
-    border-radius: 4px;
-    color: #ffffff;
-    padding: 5px 20px;
-    font-size: 16px;
-    cursor: pointer;
+    background-color: transparent; /* Transparent background */
+    border: none;                  /* Remove border */
+    border-radius: 4px;            /* Rounded corners */
+    color: white;                /* White text color */
+    padding: 6px 20px;             /* 6px padding top/bottom, 20px padding left/right */
+    font-size: 14px;               /* Medium font size */
+    cursor: pointer;               /* Change cursor to pointer on hover */
 }
 
-.menu-btn:hover {
-    background-color: #2980b9;
+.menu-btn:hover { background-color: #3498db; }  /* Blue background on hover */
+.menu-btn:active { background-color: #2980b9; } /* Slightly darken background when clicked */
+
+
+#sidebar {
+    background-color: #f4f4f4; /* Light background color */
+    overflow-y: auto;          /* Scroll if content is too tall */
+    display: flex;             /* Use flexbox layout */
+    flex-direction: column;    /* Use vertical axis in flexbox layout */
+    padding: 10px;             /* Padding all around */
 }
 
-.menu-btn:active {
-    background-color: #2471a3;
+.sidebar-tab {
+    margin-bottom: 10px;    /* Add space between sidebar tabs */
 }
+
+.sidebar-btn {
+    display: flex;                  /* Use flexbox layout (horizontal axis) */
+    justify-content: space-between; /* Put extra space between text and chevron */
+    align-items: center;            /* Center items vertically */
+    width: 100%;                    /* Take up full width of sidebar */
+    padding: 10px;                  /* Padding all around */
+    background-color: #ddd;         /* Light background color */
+    border: none;                   /* Remove border */
+    border-radius: 4px;             /* Rounded corners */
+    cursor: pointer;                /* Change cursor to pointer on hover */
+    font-size: 14px;                /* Medium font size */
+}
+
+.sidebar-btn:hover {
+    background-color: #bbb;     /* Slightly darken background color on hover */
+}
+
+.chevron {
+    width: 10px;                        /* Width of 10px */
+    height: 10px;                       /* Height of 10px */
+    border-bottom: 3px solid black;     /* Keep only bottom and right borders */
+    border-right: 3px solid black;      /* and rotate -45 degrees to make a */
+    transform: rotate(-45deg);          /* chevron pointing to the right. */
+}
+
+.dropdown-content {
+    display: none;            /* Hide dropdown content by default */
+    flex-direction: column;   /* Use vertical axis in flexbox layout */
+    padding-left: 10px;       /* Add padding to the left of dropdown content */
+    margin-top: 5px;          /* Add space above dropdown content */
+}
+
+.dropdown-item {
+    margin-top: 3px;         /* Add space above each dropdown item */
+    padding: 5px 10px;       /* 5px padding top/bottom, 10px padding left/right */
+    background-color: white; /* White background */
+    border: 1px solid #ddd;  /* Light border */
+    border-radius: 4px;      /* Rounded corners */
+    cursor: pointer;         /* Change cursor to pointer on hover */
+    font-size: 12px;         /* Small font size */
+}
+
+.dropdown-item:hover {
+    background-color: #e0e0e0;   /* Slightly darken background on hover */
+}
+
+#canvas-container { background-color: #f9f9f9; }  /* Light background color */
+#canvas { background-color: #fff; }               /* White background */
