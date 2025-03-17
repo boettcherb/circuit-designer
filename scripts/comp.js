@@ -267,13 +267,7 @@ export class Resistor extends Component {
     }
 
     serialize() {
-        return {
-            type: this.type,
-            gx: this.gx,
-            gy: this.gy,
-            resistance: this.resistance,
-            powerRating: this.powerRating,
-        }
+        return { t: this.type, x: this.gx, y: this.gy, r: this.resistance, p: this.powerRating };
     }
 }
 
@@ -339,13 +333,7 @@ export class Capacitor extends Component {
     }
 
     serialize() {
-        return {
-            t: this.type,
-            x: this.gx,
-            y: this.gy,
-            capacitance: this.capacitance,
-            voltageRating: this.voltageRating,
-        }
+        return { t: this.type, x: this.gx, y: this.gy, c: this.capacitance, v: this.voltageRating };
     }
 }
 
@@ -411,12 +399,7 @@ export class Inductor extends Component {
     }
 
     serialize() {
-        return {
-            type: this.type,
-            gx: this.gx,
-            gy: this.gy,
-            inductance: this.inductance,
-        }
+        return { t: this.type, x: this.gx, y: this.gy, i: this.inductance };
     }
 }
 
@@ -495,12 +478,6 @@ export class Battery extends Component {
     }
 
     serialize() {
-        return {
-            type: this.type,
-            gx: this.gx,
-            gy: this.gy,
-            voltage: this.voltage,
-            maxCurrent: this.maxCurrent,
-        }
+        return { t: this.type, x: this.gx, y: this.gy, v: this.voltage, c: this.maxCurrent };
     }
 }

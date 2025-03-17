@@ -396,9 +396,7 @@ export class Circuit {
     }
 
     clearAll() {
-        for (const comp of this.components) comp.group.destroy();
-        for (const wire of this.wires) wire.line.destroy();
-        for (const node of this.nodes) node.circle.destroy();
+        this.layer.destroyChildren();
         this.components = [];
         this.wires = [];
         this.nodes = [];

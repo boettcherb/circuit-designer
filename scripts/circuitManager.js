@@ -2,83 +2,94 @@ import { Circuit } from './circuit.js';
 
 class CircuitManager {
     constructor() {
-        this.circuits = [];
-        this.selectedCircuit = null;
-        this.loadCircuits();
-    }
-
-    loadCircuits() {
-        const savedData = localStorage.getItem('circuits');
-        if (savedData) {
-            const circuits = JSON.parse(savedData);
-            for (const c of circuits) {
-                const circuit = new Circuit(c.name);
-                circuit.build(c);
-                this.circuits.push(circuit);
-            }
+        this.circuitNames = [];
+        this.circuit = null;
+        const savedNames = localStorage.getItem('circuit_names');
+        if (savedNames) {
+            this.circuitNames = JSON.parse(savedNames);
+            this.loadCircuit(this.circuitNames[0]);
         } else {
-            this.circuits = [ new Circuit(this.getUnusedName()) ];
+            this.newCircuit();
         }
-        this.selectedCircuit = this.circuits[0];
     }
 
-    saveCircuits() {
-        const circuits = [];
-        for (const circuit of this.circuits) {
-            const map = new Map();
-            const comps = [];
-            const wires = [];
-            const nodes = [];
-            for (let i = 0; i < circuit.components.length; ++i)
-                map.set(circuit.components[i], i);
-            for (let i = 0; i < circuit.nodes.length; ++i)
-                map.set(circuit.nodes[i], i);
-            for (const comp of circuit.components) {
-                comps.push({ t: comp.type, x: comp.gx, y: comp.gy });
-            }
-            for (const wire of circuit.wires) {
-                if (wire.startNode === null || wire.endNode === null) continue;
-                let s = map.get(wire.startNode);
-                let e = map.get(wire.endNode);
-                if (s === undefined) s = [map.get(wire.startNode.comp), wire.startNode.comp.getTerminalIndex(wire.startNode)];
-                if (e === undefined) e = [map.get(wire.endNode.comp), wire.endNode.comp.getTerminalIndex(wire.endNode)];
-                wires.push({ s: s, e: e });
-            }
-            for (const node of circuit.nodes) {
-                nodes.push({ x: node.gx, y: node.gy });
-            }
-            circuits.push({ name: circuit.name, comps: comps, wires: wires, nodes: nodes });
-        }
-        localStorage.setItem('circuits', JSON.stringify(circuits));
+    loadCircuit(name) {
+        if (this.circuit !== null) this.save();
+        this.unloadCircuit();
+        if (!this.circuitNames.includes(name)) throw new Error(`Circuit ${name} not in circuitNames`);
+        const savedCircuit = JSON.parse(localStorage.getItem(name));
+        if (!savedCircuit) throw new Error(`Circuit ${name} not in localStorage`);
+        this.circuit = new Circuit(name);
+        this.circuit.build(savedCircuit);
+        this.save();
     }
 
+    save() {
+        localStorage.setItem('circuit_names', JSON.stringify(this.circuitNames));
+        const map = new Map();
+        const comps = [];
+        const wires = [];
+        const nodes = [];
+        for (let i = 0; i < this.circuit.components.length; ++i)
+            map.set(this.circuit.components[i], i);
+        for (let i = 0; i < this.circuit.nodes.length; ++i)
+            map.set(this.circuit.nodes[i], i);
+        for (const comp of this.circuit.components)
+            comps.push(comp.serialize());
+        for (const node of this.circuit.nodes)
+            nodes.push({ x: node.gx, y: node.gy });
+        for (const wire of this.circuit.wires) {
+            if (wire.startNode === null || wire.endNode === null) continue;
+            let s = map.get(wire.startNode);
+            let e = map.get(wire.endNode);
+            if (s === undefined) s = [map.get(wire.startNode.comp), wire.startNode.comp.getTerminalIndex(wire.startNode)];
+            if (e === undefined) e = [map.get(wire.endNode.comp), wire.endNode.comp.getTerminalIndex(wire.endNode)];
+            wires.push({ s: s, e: e });
+        }
+        const obj = { name: this.circuit.name, comps: comps, wires: wires, nodes: nodes };
+        localStorage.setItem(this.circuit.name, JSON.stringify(obj));
+    }
+
+    // Find an unused name for a new circuit
     getUnusedName() {
         let i = 1;
-        while (this.circuits.some(circuit => circuit.name === `Unnamed-${i}`)) {
+        while (this.circuitNames.some(name => name === `Unnamed-${i}`)) {
             ++i;
         }
         return `Unnamed-${i}`;
     }
 
-    createCircuit() {
+    // Create a new circuit with an unused name and switch to it
+    newCircuit() {
+        if (this.circuit !== null) this.save();
+        this.unloadCircuit();
         const circuit = new Circuit(this.getUnusedName());
-        this.circuits.push(circuit);
-        this.saveCircuits();
+        this.circuitNames.push(circuit.name);
+        this.circuit = circuit;
+        this.save();
     }
 
-    deleteCircuit(circuit) {
-        if (!(circuit instanceof Circuit)) throw new Error('circuit is not a Circuit');
-        circuit.clearAll();
-        const index = this.circuits.indexOf(circuit);
-        if (index === -1) throw new Error('circuit not found');
-        this.circuits.splice(index, 1);
-        if (this.circuits.length === 0) {
-            this.createCircuit();
+    deleteCircuit(name) {
+        if (!this.circuitNames.includes(name)) throw new Error(`Circuit ${name} not in circuitNames`);
+        localStorage.removeItem(name);
+        this.circuitNames.splice(this.circuitNames.indexOf(name), 1);
+        if (name !== this.circuit.name) {
+            this.save();
+            return;
         }
-        if (this.selectedCircuit === circuit) {
-            this.selectedCircuit = this.circuits[0];
+        this.unloadCircuit();
+        if (this.circuitNames.length === 0)
+            this.newCircuit();
+        else
+            this.loadCircuit(this.circuitNames[0]);
+    }
+
+    unloadCircuit() {
+        if (this.circuit !== null) {
+            this.circuit.clearAll();
+            this.circuit.layer.destroy();
+            this.circuit = null;
         }
-        this.saveCircuits();
     }
 }
 

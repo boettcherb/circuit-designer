@@ -8,16 +8,16 @@ grid.draw();
 // Handle key presses
 document.addEventListener('keydown', (e) => {
     e.preventDefault();
-    if (e.key === 'Delete') circuitManager.selectedCircuit.deleteSelected();
-    if (e.ctrlKey && e.key === 's') circuitManager.saveCircuits();
+    if (e.key === 'Delete') circuitManager.circuit.deleteSelected();
+    if (e.ctrlKey && e.key === 's') circuitManager.save();
 });
 
 // Save circuits to local storage every 10 seconds
-setInterval(() => { circuitManager.saveCircuits(); }, 10000);
+setInterval(() => { circuitManager.save(); }, 10000);
 
 // handle menu button presses
 document.getElementById('clear-canvas-menu-btn').addEventListener('click', () => {
-    circuitManager.selectedCircuit.clearAll();
+    circuitManager.circuit.clearAll();
 });
 document.getElementById('my-circuits-menu-btn').addEventListener('click', openCircuitsModal);
 document.getElementById('close-my-circuits-btn').addEventListener('click', () => {
@@ -27,12 +27,12 @@ document.getElementById('close-my-circuits-btn').addEventListener('click', () =>
 function openCircuitsModal() {
     const circuitList = document.getElementById('my-circuits-list');
     circuitList.innerHTML = '';
-    for (const circuit of circuitManager.circuits) {
+    for (const name of circuitManager.circuitNames) {
         const li = document.createElement('li');
-        if (circuit === circuitManager.selectedCircuit)
+        if (name === circuitManager.circuit.name)
             li.classList.add('selected-circuit');
         const nameSpan = document.createElement('span');
-        nameSpan.textContent = circuit.name;
+        nameSpan.textContent = name;
         nameSpan.classList.add('circuit-name');
         li.appendChild(nameSpan);
 
@@ -45,8 +45,8 @@ function openCircuitsModal() {
         deleteButton.textContent = 'Delete';
         deleteButton.classList.add('circuitlist-delete-btn');
         deleteButton.addEventListener('click', () => {
-            if (confirm(`Are you sure you want to delete circuit "${circuit.name}"?`)) {
-                circuitManager.deleteCircuit(circuit);
+            if (confirm(`Are you sure you want to delete circuit "${name}"?`)) {
+                circuitManager.deleteCircuit(name);
                 openCircuitsModal();
             }
         });
@@ -58,7 +58,7 @@ function openCircuitsModal() {
 }
 
 document.getElementById('add-circuit-btn').addEventListener('click', () => {
-    circuitManager.createCircuit();
+    circuitManager.newCircuit();
     openCircuitsModal();
 });
 
@@ -79,7 +79,7 @@ let click = false;
 stage.on('click', () => {
     if (click) {
         click = false;
-        circuitManager.selectedCircuit.deselectAll();
+        circuitManager.circuit.deselectAll();
     }
 });
 
@@ -102,7 +102,7 @@ stage.on('mousemove touchmove', () => {
     
     grid.updateOffset(dx, dy);
     grid.draw();
-    circuitManager.selectedCircuit.repositionComps();
+    circuitManager.circuit.repositionComps();
 });
 stage.on('mouseup touchend', () => {
     grid.isDragging = false;
@@ -130,7 +130,7 @@ stage.on('wheel', (e) => {
         // If the origin has changed, update all components' gw and gh values
         // (this will not actually move the components or update their positions
         // relative to the screen).
-        circuitManager.selectedCircuit.handleGridOriginUpdate(oldOrigin);
+        circuitManager.circuit.handleGridOriginUpdate(oldOrigin);
     }
 
     // calculate the new grid size
@@ -145,8 +145,8 @@ stage.on('wheel', (e) => {
     grid.draw();
 
     // reposition and scale the components
-    circuitManager.selectedCircuit.repositionComps();
-    circuitManager.selectedCircuit.scaleComps(oldGridSize);
+    circuitManager.circuit.repositionComps();
+    circuitManager.circuit.scaleComps(oldGridSize);
 
     setTimeout(() => { throttle = false }, GRID_RESIZE_TIMEOUT);
 });
@@ -161,18 +161,18 @@ for (const sidebarBtn of document.getElementsByClassName('sidebar-btn')) {
 
 // If a component in the left sidebar is clicked, add it to the canvas.
 document.getElementById('battery-dropdown-item').addEventListener('click', () => {
-    const c = circuitManager.selectedCircuit;
+    const c = circuitManager.circuit;
     c.addComponent(new Battery(2, 2, c));
 });
 document.getElementById('resistor-dropdown-item').addEventListener('click', () => {
-    const c = circuitManager.selectedCircuit;
+    const c = circuitManager.circuit;
     c.addComponent(new Resistor(2, 2, c));
 });
 document.getElementById('capacitor-dropdown-item').addEventListener('click', () => {
-    const c = circuitManager.selectedCircuit;
+    const c = circuitManager.circuit;
     c.addComponent(new Capacitor(2, 2, c));
 });
 document.getElementById('inductor-dropdown-item').addEventListener('click', () => {
-    const c = circuitManager.selectedCircuit;
+    const c = circuitManager.circuit;
     c.addComponent(new Inductor(2, 2, c));
 });
