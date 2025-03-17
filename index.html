@@ -9,25 +9,25 @@
     <link rel="stylesheet" href="modal.css">
 </head>
 <body>
-    <div id="top-bar">
-        <button id="clear-all-button" class="menu-btn">Clear All</button>
-        <button id="my-circuits-button" class="menu-btn">My Circuits</button>
-        <div>Options</div>
+    <div id="menu-bar">
+        <button class="menu-btn">New Circuit</button>
+        <button id="my-circuits-menu-btn" class="menu-btn">My Circuits</button>
+        <button id="clear-canvas-menu-btn" class="menu-btn">Clear Canvas</button>
+        <button class="menu-btn">Clean</button>
+        <button class="menu-btn">Simulate</button>
+        <button class="menu-btn">Download</button>
+        <button class="menu-btn">Upload</button>
+        <button class="menu-btn">Help</button>
+        <button class="menu-btn">Report Bug</button>
+        <button class="menu-btn">Request Feature</button>
+        <button class="menu-btn">Donate</button>
     </div>
-    <div id="my-circuits-modal" class="modal-background">
-        <div class="modal">
-            <div class="modal-header">
-                <h1>My Circuits</h1>
-                <span id="close-my-circuits-button" class="close-button">&times;</span>
-            </div>
-            <ul id="my-circuits-list"></ul>
-            <button id="add-circuit-button">Add Circuit</button>
-        </div>
-    </div>
-    
-    <div id="left-panel">
+    <div id="sidebar">
         <div class="sidebar-tab">
-            <button id="io-dropdown-button" class="tab-button">Input/Output</button>
+            <button id="io-dropdown-btn" class="sidebar-btn">
+                Input/Output
+                <div class="chevron"></div>
+            </button>
             <div class="dropdown-content" id="io">
                 <div id="battery-dropdown-item" class="dropdown-item">Battery</div>
                 <div class="dropdown-item">Ground</div>
@@ -36,7 +36,10 @@
             </div>
         </div>
         <div class="sidebar-tab">
-            <button id="basic-components-dropdown-button" class="tab-button">Basic Components</button>
+            <button id="basic-components-dropdown-btn" class="sidebar-btn">
+                Basic Components
+                <div class="chevron"></div>
+            </button>
             <div class="dropdown-content" id="basic-components">
                 <div id="resistor-dropdown-item" class="dropdown-item">Resistor</div>
                 <div id="capacitor-dropdown-item" class="dropdown-item">Capacitor</div>
@@ -46,7 +49,10 @@
             </div>
         </div>
         <div class="sidebar-tab">
-            <button id="logic-gates-dropdown-button" class="tab-button">Logic Gates</button>
+            <button id="logic-gates-dropdown-btn" class="sidebar-btn">
+                Logic Gates
+                <div class="chevron"></div>
+            </button>
             <div class="dropdown-content" id="logic-gates">
                 <div class="dropdown-item">AND Gate</div>
                 <div class="dropdown-item">OR Gate</div>
@@ -60,6 +66,20 @@
     <div id="canvas-container">
         <div id="canvas"></div>
     </div>
+
+    <!-- Modals -->
+    <div id="my-circuits-modal" class="modal-background">
+        <div class="modal">
+            <div class="modal-header">
+                <h1>My Circuits</h1>
+                <span id="close-my-circuits-btn" class="close-btn">&times;</span>
+            </div>
+            <ul id="my-circuits-list"></ul>
+            <button id="add-circuit-btn">Add Circuit</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/konva@8.4.2/konva.min.js"></script>
     <script type="module" src="scripts/stage.js"></script>
     <script type="module" src="scripts/comp.js"></script>

@@ -16,34 +16,34 @@ document.addEventListener('keydown', (e) => {
 setInterval(() => { circuitManager.saveCircuits(); }, 10000);
 
 // handle menu button presses
-document.getElementById('clear-all-button').addEventListener('click', () => {
+document.getElementById('clear-canvas-menu-btn').addEventListener('click', () => {
     circuitManager.selectedCircuit.clearAll();
 });
-document.getElementById('my-circuits-button').addEventListener('click', openCircuitsModal);
-document.getElementById('close-my-circuits-button').addEventListener('click', () => {
+document.getElementById('my-circuits-menu-btn').addEventListener('click', openCircuitsModal);
+document.getElementById('close-my-circuits-btn').addEventListener('click', () => {
     document.getElementById('my-circuits-modal').style.display = 'none';
 });
 
 function openCircuitsModal() {
-    console.log("Opening circuits modal...");
-    const modal = document.getElementById('my-circuits-modal');
     const circuitList = document.getElementById('my-circuits-list');
     circuitList.innerHTML = '';
-    circuitManager.circuits.forEach(circuit => {
+    for (const circuit of circuitManager.circuits) {
         const li = document.createElement('li');
+        if (circuit === circuitManager.selectedCircuit)
+            li.classList.add('selected-circuit');
         const nameSpan = document.createElement('span');
         nameSpan.textContent = circuit.name;
         nameSpan.classList.add('circuit-name');
-        // TODO: add a click listener to change the selected circuit to this one
         li.appendChild(nameSpan);
 
+        // TODO: select button
         // TODO: move up button
         // TODO: move down button
-        // TODO: edit button
+        // TODO: rename button
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
-        deleteButton.classList.add('circuit-button');
+        deleteButton.classList.add('circuitlist-delete-btn');
         deleteButton.addEventListener('click', () => {
             if (confirm(`Are you sure you want to delete circuit "${circuit.name}"?`)) {
                 circuitManager.deleteCircuit(circuit);
@@ -53,9 +53,14 @@ function openCircuitsModal() {
         li.appendChild(deleteButton);
 
         circuitList.appendChild(li);
-    });
-    modal.style.display = 'block';
+    }
+    document.getElementById('my-circuits-modal').style.display = 'block';
 }
+
+document.getElementById('add-circuit-btn').addEventListener('click', () => {
+    circuitManager.createCircuit();
+    openCircuitsModal();
+});
 
 // Handle window resizing
 window.addEventListener('resize', () => {
@@ -149,13 +154,13 @@ stage.on('wheel', (e) => {
 
 
 // Add event listeners for the dropdown buttons on the left sidebar.
-document.getElementById('io-dropdown-button').addEventListener('click', () => {
+document.getElementById('io-dropdown-btn').addEventListener('click', () => {
     toggleDropdown('io');
 });
-document.getElementById('basic-components-dropdown-button').addEventListener('click', () => {
+document.getElementById('basic-components-dropdown-btn').addEventListener('click', () => {
     toggleDropdown('basic-components');
 });
-document.getElementById('logic-gates-dropdown-button').addEventListener('click', () => {
+document.getElementById('logic-gates-dropdown-btn').addEventListener('click', () => {
     toggleDropdown('logic-gates');
 });
 
