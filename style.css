@@ -29,13 +29,14 @@ body {
 .menu-btn:hover { background-color: #3498db; }  /* Blue background on hover */
 .menu-btn:active { background-color: #2980b9; } /* Slightly darken background when clicked */
 
-
 #sidebar {
-    background-color: #f4f4f4; /* Light background color */
-    overflow-y: auto;          /* Scroll if content is too tall */
-    display: flex;             /* Use flexbox layout */
-    flex-direction: column;    /* Use vertical axis in flexbox layout */
-    padding: 10px;             /* Padding all around */
+    height: calc(100vh - 40px); /* Take up remaining height of screen */
+    box-sizing: border-box;     /* Ensures padding is included in the height */
+    background-color: #f4f4f4;  /* Light background color */
+    overflow-y: auto;           /* Scroll if content is too tall */
+    display: flex;              /* Use flexbox layout */
+    flex-direction: column;     /* Use vertical axis in flexbox layout */
+    padding: 10px;              /* Padding all around */
 }
 
 .sidebar-tab {
