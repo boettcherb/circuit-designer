@@ -5,11 +5,12 @@ import { Component, Wire, Node, NodeType } from "./comp.js";
 export class Circuit {
     constructor(name) {
         this.name = name;
+        this.updated = false;
         this.components = [];
         this.wires = [];
         this.nodes = []; // nodes not tied to components
 
-        // The first element (index == 0) is the selected component.
+        // The first element (index 0) is the selected component.
         // The other elements (index > 0) are the wires and nodes
         // connected to (shorted to) the selected component.
         this.selected = [];
@@ -20,17 +21,16 @@ export class Circuit {
 
     // Load a circuit from a JSON object.
     build(data) {
-        for (const comp of data.comps) {
+        for (const comp of data.comps)
             this.addComponent(Component.createComponent(comp, this));
-        }
-        for (const node of data.nodes) {
+        for (const node of data.nodes)
             this.addNode(new Node(NodeType.WIRE, node.x, node.y, null, this));
-        }
         for (const wire of data.wires) {
             let startNode = Array.isArray(wire.s) ? this.components[wire.s[0]].terminals[wire.s[1]] : this.nodes[wire.s];
             let endNode = Array.isArray(wire.e) ? this.components[wire.e[0]].terminals[wire.e[1]] : this.nodes[wire.e];
             this.createWire(startNode, endNode);
         }
+        this.updated = false;
     }
     
     addComponent(component) {
@@ -45,9 +45,8 @@ export class Circuit {
         component.addGroup(group);
 
         // add all lines and terminals to the group
-        for (const line of component.lines) {
+        for (const line of component.lines)
             group.add(line);
-        }
         for (const terminal of component.terminals) {
             group.add(terminal.circle);
             terminal.circle.on('click', (e) => {
@@ -108,6 +107,7 @@ export class Circuit {
         this.components.push(component);
         this.layer.add(group);
         this.layer.draw();
+        this.updated = true;
     }
 
     deleteComponent(comp) {
@@ -124,6 +124,7 @@ export class Circuit {
         this.components.splice(index, 1);
         comp.group.destroy();
         this.layer.draw();
+        this.updated = true;
     }
 
     addWire(wire) {
@@ -138,6 +139,7 @@ export class Circuit {
             e.cancelBubble = true;
             this.select(wire);
         });
+        this.updated = true;
     }
 
     createWire(startNode, endNode) {
@@ -152,6 +154,7 @@ export class Circuit {
         startNode.connections.push(wire);
         endNode.connections.push(wire);
         this.addWire(wire);
+        this.updated = true;
     }
 
 
@@ -167,14 +170,14 @@ export class Circuit {
         this.wires = this.wires.filter(w => w !== wire);
         wire.line.destroy();
         this.layer.draw();
+        this.updated = true;
     }
 
     // Get a list of nodes at the grid position (gx, gy).
     getNodesAt(gx, gy) {
         const nodes = [];
-        for (const node of this.nodes) {
+        for (const node of this.nodes)
             if (node.gx === gx && node.gy === gy) nodes.push(node);
-        }
         for (const comp of this.components) {
             for (const terminal of comp.terminals) {
                 if (terminal.gx === gx && terminal.gy === gy) nodes.push(terminal);
@@ -232,6 +235,7 @@ export class Circuit {
         this.layer.add(node.circle);
         this.layer.draw();
         node.circle.on('click', () => { this.select(node); });
+        this.updated = true;
     }
 
     deleteNode(node) {
@@ -249,6 +253,7 @@ export class Circuit {
         this.nodes.splice(index, 1);
         node.circle.destroy();
         this.layer.draw();
+        this.updated = true;
     }
 
     // Ensure the position of every component is at a grid line intersection.
@@ -402,5 +407,6 @@ export class Circuit {
         this.nodes = [];
         this.selected = [];
         this.layer.draw();
+        this.updated = true;
     }
 }

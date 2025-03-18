@@ -26,6 +26,8 @@ class CircuitManager {
 
     save() {
         localStorage.setItem('circuit_names', JSON.stringify(this.circuitNames));
+        if (!this.circuit.updated) return;
+        this.circuit.updated = false;
         const map = new Map();
         const comps = [];
         const wires = [];
