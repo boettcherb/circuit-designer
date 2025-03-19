@@ -117,7 +117,7 @@ export class Node {
     
     createWire(startX, startY) {
         const wire = new Wire(this, startX, startY);
-        this.connections.push(wire);
+        // temporarily add wire to layer so we can see it as it is being drawn
         this.circuit.layer.add(wire.line);
 
         // Update wire endpoint on mousemove
@@ -134,14 +134,15 @@ export class Node {
             const gy2 = this.gy + (wire.line.points()[3] - startY) / grid.gridSize;
             // if the created wire is length 0, delete it
             if (this.gx == gx2 && this.gy == gy2) {
-                this.circuit.deleteWire(wire);
+                wire.line.remove();
             } else {
                 let endNode = this.circuit.getNodesAt(gx2, gy2)[0];
                 if (endNode === undefined) {
                     endNode = new Node(NodeType.WIRE, gx2, gy2, null, this.circuit);
-                    this.circuit.addNode(endNode);
+                    this.circuit.addNode(endNode, false);
                 }
                 wire.endNode = endNode;
+                this.connections.push(wire);
                 endNode.connections.push(wire);
                 wire.line.remove();
                 this.circuit.addWire(wire, startX, startY);
