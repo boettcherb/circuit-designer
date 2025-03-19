@@ -118,7 +118,7 @@ export class Node {
     createWire(startX, startY) {
         const wire = new Wire(this, startX, startY);
         this.connections.push(wire);
-        this.circuit.addWire(wire, startX, startY);
+        this.circuit.layer.add(wire.line);
 
         // Update wire endpoint on mousemove
         stage.on('mousemove.wire', () => {
@@ -143,6 +143,8 @@ export class Node {
                 }
                 wire.endNode = endNode;
                 endNode.connections.push(wire);
+                wire.line.remove();
+                this.circuit.addWire(wire, startX, startY);
             }            
             this.circuit.reselect();
         });
