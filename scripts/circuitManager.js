@@ -6,50 +6,53 @@ class CircuitManager {
         this.circuit = null;
         const savedNames = localStorage.getItem('circuit_names');
         if (savedNames) {
-            this.circuitNames = JSON.parse(savedNames);
+            try {
+                this.circuitNames = JSON.parse(savedNames);
+            } catch (e) { // Error parsing circuit names, clear circuit_names from localStorage
+                console.warn(e);
+                localStorage.removeItem('circuit_names');
+                this.newCircuit();
+                return;
+            }
             this.loadCircuit(this.circuitNames[0]);
         } else {
             this.newCircuit();
         }
     }
 
-    loadCircuit(name) {
-        if (this.circuit !== null) this.save();
-        this.unloadCircuit();
-        if (!this.circuitNames.includes(name)) throw new Error(`Circuit ${name} not in circuitNames`);
-        const savedCircuit = JSON.parse(localStorage.getItem(name));
-        if (!savedCircuit) throw new Error(`Circuit ${name} not in localStorage`);
-        this.circuit = new Circuit(name);
-        this.circuit.build(savedCircuit);
-        this.save();
+    // Load a circuit from localStorage with the given name. `name` should be in circuitNames. If
+    // the circuit cannot be loaded, it is removed from localStorage and circuitNames and the next
+    // name in the list is tried. If no circuits can be loaded, a new circuit is created.
+    loadCircuit(nameToLoad) {
+        const names = [nameToLoad, ...this.circuitNames.filter(name => name !== nameToLoad)];
+        while (names.length > 0) {
+            const name = names.shift();
+            if (!this.circuitNames.includes(name)) throw new Error("Error: circuit name not in circuitNames");
+            try {
+                const savedData = localStorage.getItem(name);
+                if (!savedData) throw new Error(`Circuit ${name} not in localStorage`);
+                const savedCircuit = JSON.parse(savedData);
+                if (this.circuit !== null) this.save();
+                this.unloadCircuit();
+                this.circuit = new Circuit(name, savedCircuit);
+                this.save();
+                return;
+            } catch (e) { // Error loading circuit, remove it from localStorage and circuitNames
+                console.warn(e);
+                localStorage.removeItem(name);
+                this.circuitNames.splice(this.circuitNames.indexOf(name), 1);
+            }
+        }
+        this.newCircuit(); // If we get here, we couldn't load any circuits
     }
 
     save() {
         localStorage.setItem('circuit_names', JSON.stringify(this.circuitNames));
-        if (!this.circuit.updated) return;
-        this.circuit.updated = false;
-        const map = new Map();
-        const comps = [];
-        const wires = [];
-        const nodes = [];
-        for (let i = 0; i < this.circuit.components.length; ++i)
-            map.set(this.circuit.components[i], i);
-        for (let i = 0; i < this.circuit.nodes.length; ++i)
-            map.set(this.circuit.nodes[i], i);
-        for (const comp of this.circuit.components)
-            comps.push(comp.serialize());
-        for (const node of this.circuit.nodes)
-            nodes.push({ x: node.gx, y: node.gy });
-        for (const wire of this.circuit.wires) {
-            if (wire.startNode === null || wire.endNode === null) continue;
-            let s = map.get(wire.startNode);
-            let e = map.get(wire.endNode);
-            if (s === undefined) s = [map.get(wire.startNode.comp), wire.startNode.comp.getTerminalIndex(wire.startNode)];
-            if (e === undefined) e = [map.get(wire.endNode.comp), wire.endNode.comp.getTerminalIndex(wire.endNode)];
-            wires.push({ s: s, e: e });
+        if (this.circuit !== null && this.circuit.updated) {
+            const jsonStr = JSON.stringify(this.circuit.history[this.circuit.historyIndex]);
+            localStorage.setItem(this.circuit.name, jsonStr);
+            this.circuit.updated = false;
         }
-        const obj = { name: this.circuit.name, comps: comps, wires: wires, nodes: nodes };
-        localStorage.setItem(this.circuit.name, JSON.stringify(obj));
     }
 
     // Find an unused name for a new circuit
@@ -65,9 +68,8 @@ class CircuitManager {
     newCircuit() {
         if (this.circuit !== null) this.save();
         this.unloadCircuit();
-        const circuit = new Circuit(this.getUnusedName());
-        this.circuitNames.push(circuit.name);
-        this.circuit = circuit;
+        this.circuit = new Circuit(this.getUnusedName());
+        this.circuitNames.push(this.circuit.name);
         this.save();
     }
 

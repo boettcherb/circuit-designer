@@ -3,37 +3,51 @@ import { stage } from "./stage.js";
 import { Component, Wire, Node, NodeType } from "./comp.js";
 
 export class Circuit {
-    constructor(name) {
+    constructor(name, buildData = null) {
         this.name = name;
-        this.updated = false;
+        this.updated = true;
         this.components = [];
         this.wires = [];
         this.nodes = []; // nodes not tied to components
+        this.layer = new Konva.Layer();
+        stage.add(this.layer);
 
         // The first element (index 0) is the selected component.
         // The other elements (index > 0) are the wires and nodes
         // connected to (shorted to) the selected component.
         this.selected = [];
 
-        this.layer = new Konva.Layer();
-        stage.add(this.layer);
+        // used for CTRL+Z and CTRL+Y
+        this.history = [this.serialize()];
+        this.historyIndex = 0;
+        if (buildData !== null) this.build(buildData);
+    }
+
+    update() {
+        this.updated = true;
+        this.history = this.history.slice(0, ++this.historyIndex);
+        this.history.push(this.serialize());
     }
 
     // Load a circuit from a JSON object.
     build(data) {
+        this.clearAll(false);
+        this.name = data.name;
         for (const comp of data.comps)
-            this.addComponent(Component.createComponent(comp, this));
+            this.addComponent(Component.createComponent(comp, this), false);
         for (const node of data.nodes)
-            this.addNode(new Node(NodeType.WIRE, node.x, node.y, null, this));
+            this.addNode(new Node(NodeType.WIRE, node.x, node.y, null, this), false);
         for (const wire of data.wires) {
             let startNode = Array.isArray(wire.s) ? this.components[wire.s[0]].terminals[wire.s[1]] : this.nodes[wire.s];
             let endNode = Array.isArray(wire.e) ? this.components[wire.e[0]].terminals[wire.e[1]] : this.nodes[wire.e];
-            this.createWire(startNode, endNode);
+            this.createWire(startNode, endNode, false);
         }
-        this.updated = false;
+        this.history.push(data);
+        this.historyIndex = this.history.length - 1;
+        this.updated = true;
     }
     
-    addComponent(component) {
+    addComponent(component, saveUpdate = true) {
         if (!(component instanceof Component)) throw new Error("component is not a Component!");
         const group = new Konva.Group({
             x: grid.offsetX + component.gx * grid.gridSize,
@@ -89,12 +103,12 @@ export class Circuit {
                 terminal.gx += component.gx - old_gx;
                 terminal.gy += component.gy - old_gy;
             }
-            this.layer.draw();
-
             // merge nodes at the new grid position of the component
             for (const terminal of component.terminals) {
                 this.mergeNodesAt(terminal.gx, terminal.gy);
             }
+            this.layer.draw();
+            this.update();
         });
 
         // Prevent grid from dragging when the user is dragging a component
@@ -107,7 +121,7 @@ export class Circuit {
         this.components.push(component);
         this.layer.add(group);
         this.layer.draw();
-        this.updated = true;
+        if (saveUpdate) this.update();
     }
 
     deleteComponent(comp) {
@@ -124,10 +138,10 @@ export class Circuit {
         this.components.splice(index, 1);
         comp.group.destroy();
         this.layer.draw();
-        this.updated = true;
+        this.update();
     }
 
-    addWire(wire) {
+    addWire(wire, saveUpdate = true) {
         if (!(wire instanceof Wire)) throw new Error("wire is not a Wire!");
         this.wires.push(wire);
         this.layer.add(wire.line);
@@ -139,10 +153,10 @@ export class Circuit {
             e.cancelBubble = true;
             this.select(wire);
         });
-        this.updated = true;
+        if (saveUpdate) this.update();
     }
 
-    createWire(startNode, endNode) {
+    createWire(startNode, endNode, saveUpdate = true) {
         if (!(startNode instanceof Node)) throw new Error("startNode is not a Node!");
         if (!(endNode instanceof Node)) throw new Error("endNode is not a Node!");
         if (startNode === endNode) throw new Error("startNode and endNode are the same!");
@@ -153,12 +167,11 @@ export class Circuit {
         wire.endNode = endNode;
         startNode.connections.push(wire);
         endNode.connections.push(wire);
-        this.addWire(wire);
-        this.updated = true;
+        this.addWire(wire, false);
+        if (saveUpdate) this.update();
     }
 
-
-    deleteWire(wire) {
+    deleteWire(wire, saveUpdate = true) {
         if (!(wire instanceof Wire)) throw new Error("wire is not a Wire!");
         if (wire === this.selected[0]) this.deselectAll();
         // Remove the wire from the connections of the start and end nodes
@@ -170,7 +183,7 @@ export class Circuit {
         this.wires = this.wires.filter(w => w !== wire);
         wire.line.destroy();
         this.layer.draw();
-        this.updated = true;
+        if (saveUpdate) this.update();
     }
 
     // Get a list of nodes at the grid position (gx, gy).
@@ -207,7 +220,7 @@ export class Circuit {
                     }
                 }
                 if (isIsolated) {
-                    this.createWire(n1, nodes[0] === n1 ? nodes[1] : nodes[0]);
+                    this.createWire(n1, nodes[0] === n1 ? nodes[1] : nodes[0], false);
                     this.reselect();
                     return;
                 }
@@ -219,26 +232,26 @@ export class Circuit {
             if (wire.startNode === toDelete) wire.startNode = otherNode;
             else wire.endNode = otherNode;
             if (wire.startNode === wire.endNode) {
-                this.deleteWire(wire);
+                this.deleteWire(wire, false);
                 continue;
             }
             otherNode.connections.push(wire);
         }
         toDelete.connections = [];
-        this.deleteNode(toDelete);
+        this.deleteNode(toDelete, false);
         this.reselect();
     }
 
-    addNode(node) {
+    addNode(node, saveUpdate = true) {
         if (!(node instanceof Node)) throw new Error("node is not a Node!");
         this.nodes.push(node);
         this.layer.add(node.circle);
         this.layer.draw();
         node.circle.on('click', () => { this.select(node); });
-        this.updated = true;
+        if (saveUpdate) this.update();
     }
 
-    deleteNode(node) {
+    deleteNode(node, saveUpdate = true) {
         if (!(node instanceof Node)) throw new Error("node is not a Node!");
         if (node === this.selected[0]) this.deselectAll();
         if (node.comp !== null) {
@@ -253,7 +266,7 @@ export class Circuit {
         this.nodes.splice(index, 1);
         node.circle.destroy();
         this.layer.draw();
-        this.updated = true;
+        if (saveUpdate) this.update();
     }
 
     // Ensure the position of every component is at a grid line intersection.
@@ -400,13 +413,55 @@ export class Circuit {
         this.deselectAll();
     }
 
-    clearAll() {
+    clearAll(saveUpdate = true) {
         this.layer.destroyChildren();
         this.components = [];
         this.wires = [];
         this.nodes = [];
         this.selected = [];
         this.layer.draw();
-        this.updated = true;
+        if (saveUpdate) this.update();
+    }
+    
+    serialize() {
+        const map = new Map();
+        const comps = [];
+        const wires = [];
+        const nodes = [];
+        for (let i = 0; i < this.components.length; ++i)
+            map.set(this.components[i], i);
+        for (let i = 0; i < this.nodes.length; ++i)
+            map.set(this.nodes[i], i);
+        for (const comp of this.components)
+            comps.push(comp.serialize());
+        for (const node of this.nodes)
+            nodes.push({ x: node.gx, y: node.gy });
+        for (const wire of this.wires) {
+            if (wire.startNode === null || wire.endNode === null) continue;
+            let s = map.get(wire.startNode);
+            let e = map.get(wire.endNode);
+            if (s === undefined) s = [map.get(wire.startNode.comp), wire.startNode.comp.getTerminalIndex(wire.startNode)];
+            if (e === undefined) e = [map.get(wire.endNode.comp), wire.endNode.comp.getTerminalIndex(wire.endNode)];
+            wires.push({ s: s, e: e });
+        }
+        return { name: this.name, comps: comps, wires: wires, nodes: nodes };
+    }
+
+    undo() {
+        if (this.historyIndex === 0) return;
+        const historyCopy = structuredClone(this.history);
+        const historyIndexCopy = this.historyIndex;
+        this.build(this.history[this.historyIndex - 1]);
+        this.history = historyCopy;
+        this.historyIndex = historyIndexCopy - 1;
+    }
+
+    redo() {
+        if (this.historyIndex === this.history.length - 1) return;
+        const historyCopy = structuredClone(this.history);
+        const historyIndexCopy = this.historyIndex;
+        this.build(this.history[this.historyIndex + 1]);
+        this.history = historyCopy;
+        this.historyIndex = historyIndexCopy + 1;
     }
 }
