@@ -24,10 +24,11 @@ class CircuitManager {
     // the circuit cannot be loaded, it is removed from localStorage and circuitNames and the next
     // name in the list is tried. If no circuits can be loaded, a new circuit is created.
     loadCircuit(nameToLoad) {
+        if (!this.circuitNames.includes(nameToLoad)) throw new Error("Error: circuit name not in circuitNames");
+        if (this.circuit !== null && this.circuit.name === nameToLoad) return;
         const names = [nameToLoad, ...this.circuitNames.filter(name => name !== nameToLoad)];
         while (names.length > 0) {
             const name = names.shift();
-            if (!this.circuitNames.includes(name)) throw new Error("Error: circuit name not in circuitNames");
             try {
                 const savedData = localStorage.getItem(name);
                 if (!savedData) throw new Error(`Circuit ${name} not in localStorage`);
@@ -53,15 +54,6 @@ class CircuitManager {
             localStorage.setItem(this.circuit.name, jsonStr);
             this.circuit.updated = false;
         }
-    }
-
-    // Find an unused name for a new circuit
-    getUnusedName() {
-        let i = 1;
-        while (this.circuitNames.some(name => name === `Unnamed-${i}`)) {
-            ++i;
-        }
-        return `Unnamed-${i}`;
     }
 
     // Create a new circuit with an unused name and switch to it
@@ -94,6 +86,30 @@ class CircuitManager {
             this.circuit.layer.destroy();
             this.circuit = null;
         }
+    }
+
+    renameCircuit(oldName, newName) {
+        if (!this.circuitNames.includes(oldName)) throw new Error(`Circuit ${oldName} not in circuitNames`);
+        if (this.circuitNames.includes(newName)) throw new Error(`Circuit ${newName} already exists`);
+        this.circuitNames[this.circuitNames.indexOf(oldName)] = newName;
+        if (this.circuit.name === oldName) {
+            this.circuit.name = newName;
+            this.history = [this.circuit.serialize()];
+            this.historyIndex = 0;
+            this.save();
+        } else {
+            localStorage.setItem(newName, localStorage.getItem(oldName));
+        }
+        localStorage.removeItem(oldName);
+    }
+
+    // Find an unused name for a new circuit
+    getUnusedName() {
+        let i = 1;
+        while (this.circuitNames.some(name => name === `Unnamed-${i}`)) {
+            ++i;
+        }
+        return `Unnamed-${i}`;
     }
 }
 
