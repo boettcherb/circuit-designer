@@ -31,6 +31,11 @@ function openCircuitsModal() {
     circuitList.innerHTML = '';
     for (const name of circuitManager.circuitNames) {
         const li = document.createElement('li');
+        circuitList.appendChild(li);
+        li.addEventListener('click', () => {
+            circuitManager.loadCircuit(name);
+            openCircuitsModal();
+        });
         if (name === circuitManager.circuit.name)
             li.classList.add('selected-circuit');
         const nameSpan = document.createElement('span');
@@ -38,23 +43,72 @@ function openCircuitsModal() {
         nameSpan.classList.add('circuit-name');
         li.appendChild(nameSpan);
 
-        // TODO: select button
-        // TODO: move up button
-        // TODO: move down button
-        // TODO: rename button
+        const buttonDiv = document.createElement('div');
+        buttonDiv.classList.add('circuitlist-btns');
+        li.appendChild(buttonDiv);
 
+        const moveUpButton = document.createElement('button');
+        const mvDownButton = document.createElement('button');
+        const renameButton = document.createElement('button');
         const deleteButton = document.createElement('button');
+
+        moveUpButton.textContent = 'Move Up';
+        mvDownButton.textContent = 'Move Down';
+        renameButton.textContent = 'Rename';
         deleteButton.textContent = 'Delete';
+
+        moveUpButton.classList.add('circuitlist-moveup-btn');
+        mvDownButton.classList.add('circuitlist-moveup-btn');
+        renameButton.classList.add('circuitlist-rename-btn');
         deleteButton.classList.add('circuitlist-delete-btn');
-        deleteButton.addEventListener('click', () => {
-            if (confirm(`Are you sure you want to delete circuit "${name}"?`)) {
+
+        buttonDiv.appendChild(moveUpButton);
+        buttonDiv.appendChild(mvDownButton);
+        buttonDiv.appendChild(renameButton);
+        buttonDiv.appendChild(deleteButton);
+        
+        moveUpButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = circuitManager.circuitNames.indexOf(name);
+            if (index > 0) {
+                const temp = circuitManager.circuitNames[index - 1];
+                circuitManager.circuitNames[index - 1] = name;
+                circuitManager.circuitNames[index] = temp;
+                openCircuitsModal();
+            }
+        });
+
+        mvDownButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = circuitManager.circuitNames.indexOf(name);
+            if (index < circuitManager.circuitNames.length - 1) {
+                const temp = circuitManager.circuitNames[index + 1];
+                circuitManager.circuitNames[index + 1] = name;
+                circuitManager.circuitNames[index] = temp;
+                openCircuitsModal();
+            }
+        });
+        
+        renameButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const newName = prompt('Enter a new name for the circuit:', name);
+            if (newName === null) return;
+            if (circuitManager.circuitNames.includes(newName)) {
+                alert(`A circuit named "${newName}" already exists.`);
+                return;
+            }
+            circuitManager.renameCircuit(name, newName);
+            openCircuitsModal();
+        });
+
+        deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`Are you sure you want to delete circuit "${name}"?
+                This action cannot be undone.`)) {
                 circuitManager.deleteCircuit(name);
                 openCircuitsModal();
             }
         });
-        li.appendChild(deleteButton);
-
-        circuitList.appendChild(li);
     }
     document.getElementById('my-circuits-modal').style.display = 'block';
 }
