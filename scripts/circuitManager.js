@@ -94,13 +94,20 @@ class CircuitManager {
         this.circuitNames[this.circuitNames.indexOf(oldName)] = newName;
         if (this.circuit.name === oldName) {
             this.circuit.name = newName;
-            this.history = [this.circuit.serialize()];
-            this.historyIndex = 0;
-            this.save();
+            this.circuit.history = [this.circuit.serialize()];
+            this.circuit.historyIndex = 0;
+            this.circuit.updated = true;
         } else {
-            localStorage.setItem(newName, localStorage.getItem(oldName));
+            try {
+                const data = JSON.parse(localStorage.getItem(oldName));
+                data.name = newName;
+                localStorage.setItem(newName, JSON.stringify(data));
+            } catch (e) {
+                console.error("Failed to rename circuit in localStorage", e);
+            }
         }
         localStorage.removeItem(oldName);
+        this.save();
     }
 
     // Find an unused name for a new circuit
