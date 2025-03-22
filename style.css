@@ -48,7 +48,7 @@ body {
     justify-content: space-between; /* Put extra space between text and chevron */
     align-items: center;            /* Center items vertically */
     width: 100%;                    /* Take up full width of sidebar */
-    padding: 10px;                  /* Padding all around */
+    padding-left: 10px;             /* 10px padding to the left of the text */
     background-color: #ddd;         /* Light background color */
     border: none;                   /* Remove border */
     border-radius: 4px;             /* Rounded corners */
@@ -58,14 +58,6 @@ body {
 
 .sidebar-btn:hover {
     background-color: #bbb;     /* Slightly darken background color on hover */
-}
-
-.chevron {
-    width: 10px;                        /* Width of 10px */
-    height: 10px;                       /* Height of 10px */
-    border-bottom: 3px solid black;     /* Keep only bottom and right borders */
-    border-right: 3px solid black;      /* and rotate -45 degrees to make a */
-    transform: rotate(-45deg);          /* chevron pointing to the right. */
 }
 
 .dropdown-content {
@@ -91,3 +83,7 @@ body {
 
 #canvas-container { background-color: #f9f9f9; }  /* Light background color */
 #canvas { background-color: #fff; }               /* White background */
+
+.material-icons.md-24 { font-size: 24px; }  /* 24px icon size */
+.material-icons.md-32 { font-size: 32px; }  /* 32px icon size */
+.material-icons.md-36 { font-size: 36px; }  /* 36px icon size */
