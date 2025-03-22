@@ -13,7 +13,7 @@ body {
     color: #fff;             /* Light text color */
     display: flex;           /* Use flexbox layout (horizontal axis */
     align-items: center;     /* Center items vertically */
-    padding-left: 10px;      /* Add padding to the left */
+    /* padding-left: 10px;      Add padding to the left */
 }
 
 .menu-btn {
@@ -37,6 +37,12 @@ body {
     display: flex;              /* Use flexbox layout */
     flex-direction: column;     /* Use vertical axis in flexbox layout */
     padding: 10px;              /* Padding all around */
+}
+
+#current-circuit {
+    margin-right: 10px;     /* Add space to the right */
+    padding: 30px;          /* Add padding all around */
+    background-color: #555; /* Gray background */
 }
 
 .sidebar-tab {

@@ -14,10 +14,12 @@ class CircuitManager {
                 this.newCircuit();
                 return;
             }
-            this.loadCircuit(this.circuitNames[0]);
-        } else {
-            this.newCircuit();
+            if (this.circuitNames.length > 0) {
+                this.loadCircuit(this.circuitNames[0]);
+                return;
+            }
         }
+        this.newCircuit();
     }
 
     // Load a circuit from localStorage with the given name. `name` should be in circuitNames. If
@@ -36,6 +38,7 @@ class CircuitManager {
                 if (this.circuit !== null) this.save();
                 this.unloadCircuit();
                 this.circuit = new Circuit(name, savedCircuit);
+                this.updateDisplayedCircuit();
                 this.save();
                 return;
             } catch (e) { // Error loading circuit, remove it from localStorage and circuitNames
@@ -61,6 +64,7 @@ class CircuitManager {
         if (this.circuit !== null) this.save();
         this.unloadCircuit();
         this.circuit = new Circuit(this.getUnusedName());
+        this.updateDisplayedCircuit();
         this.circuitNames.push(this.circuit.name);
         this.save();
     }
@@ -88,6 +92,10 @@ class CircuitManager {
         }
     }
 
+    updateDisplayedCircuit() {
+        document.getElementById('current-circuit').textContent = `Current Circuit: ${this.circuit.name}`;
+    }
+
     renameCircuit(oldName, newName) {
         if (!this.circuitNames.includes(oldName)) throw new Error(`Circuit ${oldName} not in circuitNames`);
         if (this.circuitNames.includes(newName)) throw new Error(`Circuit ${newName} already exists`);
@@ -97,6 +105,7 @@ class CircuitManager {
             this.circuit.history = [this.circuit.serialize()];
             this.circuit.historyIndex = 0;
             this.circuit.updated = true;
+            this.updateDisplayedCircuit();
         } else {
             try {
                 const data = JSON.parse(localStorage.getItem(oldName));
