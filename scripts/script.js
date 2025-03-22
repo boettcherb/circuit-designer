@@ -210,9 +210,12 @@ stage.on('wheel', (e) => {
 
 // Handle the sidebar dropdowns
 for (const sidebarBtn of document.getElementsByClassName('sidebar-btn')) {
-    sidebarBtn.addEventListener('click', (e) => {
-        const dropdown = e.target.nextElementSibling;
-        dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+    sidebarBtn.addEventListener('click', () => {
+        const dropdown = sidebarBtn.nextElementSibling;
+        const open = dropdown.style.display === 'flex';
+        dropdown.style.display = open ? 'none' : 'flex';
+        const icon = sidebarBtn.firstElementChild;
+        icon.textContent = open ? 'keyboard_arrow_right' : 'keyboard_arrow_down';
     });
 }
 
