@@ -222,6 +222,14 @@ for (const sidebarBtn of document.getElementsByClassName('sidebar-btn')) {
     });
 }
 
+// Close modal if user clicks outside of it
+const myCircuitsModal = document.getElementById('my-circuits-modal');
+myCircuitsModal.addEventListener('click', (e) => {
+    if (e.target === myCircuitsModal) {
+        myCircuitsModal.style.display = 'none';
+    }
+});
+
 // If a component in the left sidebar is clicked, add it to the canvas.
 document.getElementById('battery-dropdown-item').addEventListener('click', () => {
     const c = circuitManager.circuit;
