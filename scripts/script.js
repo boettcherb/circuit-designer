@@ -17,15 +17,6 @@ document.addEventListener('keydown', (e) => {
 // Save circuits to local storage every 10 seconds
 setInterval(() => { circuitManager.save(); }, 10000);
 
-// handle menu button presses
-document.getElementById('clear-canvas-menu-btn').addEventListener('click', () => {
-    circuitManager.circuit.clearAll();
-});
-document.getElementById('my-circuits-menu-btn').addEventListener('click', openCircuitsModal);
-document.getElementById('close-my-circuits-btn').addEventListener('click', () => {
-    document.getElementById('my-circuits-modal').style.display = 'none';
-});
-
 function openCircuitsModal() {
     const circuitList = document.getElementById('my-circuits-list');
     circuitList.innerHTML = '';
@@ -206,6 +197,18 @@ stage.on('wheel', (e) => {
     circuitManager.circuit.scaleComps(oldGridSize);
 
     setTimeout(() => { throttle = false }, GRID_RESIZE_TIMEOUT);
+});
+
+// handle menu button presses
+document.getElementById('new-circuit-menu-btn').addEventListener('click', () => {
+    circuitManager.newCircuit();
+});
+document.getElementById('my-circuits-menu-btn').addEventListener('click', openCircuitsModal);
+document.getElementById('clear-canvas-menu-btn').addEventListener('click', () => {
+    circuitManager.circuit.clearAll();
+});
+document.getElementById('close-my-circuits-btn').addEventListener('click', () => {
+    document.getElementById('my-circuits-modal').style.display = 'none';
 });
 
 // Handle the sidebar dropdowns
