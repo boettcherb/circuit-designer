@@ -32,6 +32,7 @@ function openCircuitsModal() {
     for (const name of circuitManager.circuitNames) {
         const li = document.createElement('li');
         circuitList.appendChild(li);
+        li.classList.add('circuit-name-li');
         li.addEventListener('click', () => {
             circuitManager.loadCircuit(name);
             openCircuitsModal();
@@ -44,21 +45,21 @@ function openCircuitsModal() {
         li.appendChild(nameSpan);
 
         const buttonDiv = document.createElement('div');
-        buttonDiv.classList.add('circuitlist-btns');
         li.appendChild(buttonDiv);
 
         const moveUpButton = document.createElement('button');
         const mvDownButton = document.createElement('button');
         const renameButton = document.createElement('button');
         const deleteButton = document.createElement('button');
+        
+        // Use Font Awesome icon classes for the icons
+        moveUpButton.innerHTML = '<i class="material-icons">keyboard_arrow_up</i>';
+        mvDownButton.innerHTML = '<i class="material-icons">keyboard_arrow_down</i>';
+        renameButton.innerHTML = '<i class="material-icons">edit</i>';
+        deleteButton.innerHTML = '<i class="material-icons">delete</i>';
 
-        moveUpButton.textContent = 'Move Up';
-        mvDownButton.textContent = 'Move Down';
-        renameButton.textContent = 'Rename';
-        deleteButton.textContent = 'Delete';
-
-        moveUpButton.classList.add('circuitlist-moveup-btn');
-        mvDownButton.classList.add('circuitlist-moveup-btn');
+        moveUpButton.classList.add('circuitlist-move-btn');
+        mvDownButton.classList.add('circuitlist-move-btn');
         renameButton.classList.add('circuitlist-rename-btn');
         deleteButton.classList.add('circuitlist-delete-btn');
 

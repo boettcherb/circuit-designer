@@ -13,8 +13,8 @@
     background-color:   #fff; /* White background */
     width: 80vw;              /* Fixed width (80% of viewport width) */
     max-width: 600px;         /* Max width of 600px */
-    max-height: 60vh;         /* Max height of 60% of viewport height */
-    margin: 20vh auto;        /* 20% top and bottom margin, center horizontally */
+    max-height: 70vh;         /* Max height of 60% of viewport height */
+    margin: 15vh auto;        /* 20% top and bottom margin, center horizontally */
     padding: 20px;            /* Padding inside the modal */
     display: flex;            /* Use flexbox layout */
     flex-direction: column;   /* Use vertical axis in flexbox layout */
@@ -59,6 +59,7 @@
 }
 
 .circuitlist-delete-btn {
+    margin-left: 10px;          /* 10px margin on the left */
     padding: 5px 8px;           /* 5px padding top and bottom, 8px left and right */
     font-size: 12px;            /* Small font size */
     cursor: pointer;            /* Cursor on hover */
@@ -67,15 +68,41 @@
     color: white;             /* White text */
 }
 
-.circuitlist-delete-btn:hover {
-    background-color: #b10d2b;      /* Slightly darker background on hover */
+.circuitlist-rename-btn {
+    margin-left: 10px;          /* 10px margin on the left */
+    padding: 5px 8px;           /* 5px padding top and bottom, 8px left and right */
+    font-size: 12px;            /* Small font size */
+    cursor: pointer;            /* Cursor on hover */
+    background-color: #387ded;  /* Blue background */
+    border: none;               /* No border */
+    color: white;             /* White text */
+}
+
+.circuitlist-move-btn {
+    margin-left: 10px;          /* 10px margin on the left */
+    padding: 5px 8px;           /* 5px padding top and bottom, 8px left and right */
+    font-size: 12px;            /* Small font size */
+    cursor: pointer;            /* Cursor on hover */
+    background-color: #5a5c5e;  /* Dark gray background */
+    border: none;               /* No border */
+    color: white;             /* White text */
+}
+
+/* Slighly darker background on hover */
+.circuitlist-delete-btn:hover { background-color: #b10d2b; }
+.circuitlist-rename-btn:hover { background-color: #2f5f9b; }
+.circuitlist-move-btn:hover { background-color: #3a3c3e; }
+
+.circuit-name-li:hover {
+    cursor: pointer;  /* Change cursor to pointer on hover */
+    text-decoration: underline;  /* Underline text on hover */
 }
 
 #add-circuit-btn {
     background-color: #29ee29;  /* Green background */
+    font-size: 24px;            /* Large font size */
     border: none;               /* No border */
-    width: 100px;               /* Fixed width of 100px */
-    padding: 8px;               /* 8px padding all around */
+    padding: 8px 20px;          /* 8px padding top/bottom, 20px padding on sides */
     margin: 5px auto;           /* 5px top and bottom margin, center horizontally */
     cursor: pointer;
 }
