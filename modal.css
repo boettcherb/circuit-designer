@@ -50,7 +50,7 @@
     display: flex;                  /* Use flexbox layout with horizontal axis */
     align-items: center;            /* Center flexbox items vertically */
     justify-content: space-between; /* Put all extra space between name and buttons */
-    padding: 15px;                  /* 15px padding on all sides */
+    padding: 10px 15px;                  /* 15px padding on all sides */
     border-bottom: 1px solid #bbb;  /* 1px line in between list items */
 }
 
@@ -58,36 +58,18 @@
     font-size: 20px;     /* Large font size */
 }
 
-.circuitlist-delete-btn {
+.circuitlist-btn {
     margin-left: 10px;          /* 10px margin on the left */
-    padding: 5px 8px;           /* 5px padding top and bottom, 8px left and right */
-    font-size: 12px;            /* Small font size */
+    width: 35px;                /* Fixed width */
+    height: 35px;               /* Fixed height */
     cursor: pointer;            /* Cursor on hover */
-    background-color: #DC143C;  /* Red background */
     border: none;               /* No border */
-    color: white;             /* White text */
+    color: white;               /* White text */
 }
 
-.circuitlist-rename-btn {
-    margin-left: 10px;          /* 10px margin on the left */
-    padding: 5px 8px;           /* 5px padding top and bottom, 8px left and right */
-    font-size: 12px;            /* Small font size */
-    cursor: pointer;            /* Cursor on hover */
-    background-color: #387ded;  /* Blue background */
-    border: none;               /* No border */
-    color: white;             /* White text */
-}
-
-.circuitlist-move-btn {
-    margin-left: 10px;          /* 10px margin on the left */
-    padding: 5px 8px;           /* 5px padding top and bottom, 8px left and right */
-    font-size: 12px;            /* Small font size */
-    cursor: pointer;            /* Cursor on hover */
-    background-color: #5a5c5e;  /* Dark gray background */
-    border: none;               /* No border */
-    color: white;             /* White text */
-}
-
+.circuitlist-delete-btn { background-color: #DC143C; } /* Red background */
+.circuitlist-rename-btn { background-color: #387ded; } /* Blue background */
+.circuitlist-move-btn { background-color: #5a5c5e; }   /* Dark gray background */
 /* Slighly darker background on hover */
 .circuitlist-delete-btn:hover { background-color: #b10d2b; }
 .circuitlist-rename-btn:hover { background-color: #2f5f9b; }
