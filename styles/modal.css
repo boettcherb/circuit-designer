@@ -30,14 +30,9 @@
     margin: 10px;   /* 10px margin all around the h2 */
 }
 
-.close-btn {
-    font-size: 35px;     /* Large font size */
-    font-weight: bold;   /* Bold text */
-    cursor: pointer;     /* Change cursor to pointer on hover */
-}
-
 .close-btn:hover {
     background-color: #e00;   /* Add a red background on hover */
+    cursor: pointer;
 }
 
 #my-circuits-list {
@@ -50,7 +45,7 @@
     display: flex;                  /* Use flexbox layout with horizontal axis */
     align-items: center;            /* Center flexbox items vertically */
     justify-content: space-between; /* Put all extra space between name and buttons */
-    padding: 10px 15px;                  /* 15px padding on all sides */
+    padding: 10px 15px;             /* 10px padding top/bottom, 15px padding on sides */
     border-bottom: 1px solid #bbb;  /* 1px line in between list items */
 }
 
@@ -70,13 +65,12 @@
 .circuitlist-delete-btn { background-color: #DC143C; } /* Red background */
 .circuitlist-rename-btn { background-color: #387ded; } /* Blue background */
 .circuitlist-move-btn { background-color: #5a5c5e; }   /* Dark gray background */
-/* Slighly darker background on hover */
 .circuitlist-delete-btn:hover { background-color: #b10d2b; }
 .circuitlist-rename-btn:hover { background-color: #2f5f9b; }
 .circuitlist-move-btn:hover { background-color: #3a3c3e; }
 
 .circuit-name-li:hover {
-    cursor: pointer;  /* Change cursor to pointer on hover */
+    cursor: pointer;             /* Change cursor to pointer on hover */
     text-decoration: underline;  /* Underline text on hover */
 }
 
@@ -86,7 +80,7 @@
     border: none;               /* No border */
     padding: 8px 20px;          /* 8px padding top/bottom, 20px padding on sides */
     margin: 5px auto;           /* 5px top and bottom margin, center horizontally */
-    cursor: pointer;
+    cursor: pointer;            /* Change cursor to pointer on hover */
 }
 
 #add-circuit-btn:hover {
