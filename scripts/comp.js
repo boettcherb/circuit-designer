@@ -109,6 +109,7 @@ export class Node {
         this.circle.on('dragend', () => {
             this.circle.draggable(false);
             this.circuit.mergeNodesAt(this.gx, this.gy);
+            this.circuit.update();
         })
 
         this.circle.on('mouseover', () => { document.body.style.cursor = 'pointer'; });

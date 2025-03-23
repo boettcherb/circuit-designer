@@ -132,7 +132,7 @@ export class Circuit {
         // remove wires attached to this component
         for (const terminal of comp.terminals) {
             for (const wire of terminal.connections) {
-                this.deleteWire(wire);
+                this.deleteWire(wire, false);
             }
         }
         this.components.splice(index, 1);
@@ -262,7 +262,7 @@ export class Circuit {
         if (index == -1) throw new Error("node not in this.nodes!");
         // remove wires attached to this node
         for (const wire of node.connections)
-            this.deleteWire(wire);
+            this.deleteWire(wire, false);
         this.nodes.splice(index, 1);
         node.circle.destroy();
         this.layer.draw();
