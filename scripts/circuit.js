@@ -24,6 +24,7 @@ export class Circuit {
     }
 
     update() {
+        console.trace();
         this.updated = true;
         this.history = this.history.slice(0, ++this.historyIndex);
         this.history.push(this.serialize());
@@ -124,7 +125,7 @@ export class Circuit {
         if (saveUpdate) this.update();
     }
 
-    deleteComponent(comp) {
+    deleteComponent(comp, saveUpdate = true) {
         if (!(comp instanceof Component)) throw new Error("comp is not a Component!");
         if (comp === this.selected[0]) this.deselectAll();
         const index = this.components.findIndex(item => item === comp);
@@ -138,7 +139,7 @@ export class Circuit {
         this.components.splice(index, 1);
         comp.group.destroy();
         this.layer.draw();
-        this.update();
+        if (saveUpdate) this.update();
     }
 
     addWire(wire, saveUpdate = true) {
@@ -255,7 +256,7 @@ export class Circuit {
         if (!(node instanceof Node)) throw new Error("node is not a Node!");
         if (node === this.selected[0]) this.deselectAll();
         if (node.comp !== null) {
-            this.deleteComponent(node.comp);
+            this.deleteComponent(node.comp, false);
             return;
         }
         const index = this.nodes.findIndex(item => item === node);
@@ -397,6 +398,8 @@ export class Circuit {
         this.selected = [];
     }
 
+    // Deselect all components, and then reselect the main selected component.
+    // This is used to update the selected array when the circuit changes.
     reselect() {
         if (this.selected.length === 0) return;
         const s = this.selected[0];
@@ -404,6 +407,7 @@ export class Circuit {
         this.select(s);
     }
 
+    // Delete the selected component, wire, or node.
     deleteSelected() {
         if (this.selected.length === 0) return;
         const s = this.selected[0];
@@ -413,6 +417,20 @@ export class Circuit {
         this.deselectAll();
     }
 
+    // Delete all components, wires, and nodes in the selected array (the
+    // selected component and all wires and nodes connected to it).
+    deleteAllInSelected() {
+        console.log(this.selected);
+        for (const obj of this.selected) {
+            if (obj instanceof Component) this.deleteComponent(obj, false);
+            else if (obj instanceof Wire) this.deleteWire(obj, false);
+            else if (obj instanceof Node && obj.comp === null) this.deleteNode(obj, false);
+        }
+        this.selected = [];
+        this.update();
+    }
+
+    // Delete all components, wires, and nodes in the circuit.
     clearAll(saveUpdate = true) {
         this.layer.destroyChildren();
         this.components = [];

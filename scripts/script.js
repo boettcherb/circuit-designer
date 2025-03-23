@@ -8,7 +8,10 @@ grid.draw();
 // Handle key presses
 document.addEventListener('keydown', (e) => {
     e.preventDefault();
-    if (e.key === 'Delete') circuitManager.circuit.deleteSelected();
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (e.shiftKey) circuitManager.circuit.deleteAllInSelected();
+        else circuitManager.circuit.deleteSelected();
+    }
     if (e.ctrlKey && e.key === 's') circuitManager.save();
     if (e.ctrlKey && e.key === 'z') circuitManager.circuit.undo();
     if (e.ctrlKey && e.key === 'y') circuitManager.circuit.redo();
