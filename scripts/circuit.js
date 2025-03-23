@@ -24,7 +24,6 @@ export class Circuit {
     }
 
     update() {
-        console.trace();
         this.updated = true;
         this.history = this.history.slice(0, ++this.historyIndex);
         this.history.push(this.serialize());
