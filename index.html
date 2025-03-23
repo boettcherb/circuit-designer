@@ -76,10 +76,24 @@
         <div class="modal">
             <div class="modal-header">
                 <h1>My Circuits</h1>
-                <i id="close-my-circuits-btn" class="material-icons md-36 close-btn">close</i>
+                <i class="material-icons md-36 close-btn">close</i>
             </div>
             <ul id="my-circuits-list"></ul>
             <button id="add-circuit-btn">Add Circuit</button>
+        </div>
+    </div>
+    <div id="new-circuit-modal" class="modal-background">
+        <div class="modal">
+            <div class="modal-header">
+                <h1>New Circuit</h1>
+                <i class="material-icons md-36 close-btn">close</i>
+            </div>
+            <p>Allowed characters: letters, numbers, underscore, hyphen</p>
+            <p>Max characters: 20</p>
+            <p>Enter the name of the new circuit:</p>
+            <input type="text" id="new-circuit-name" placeholder="Circuit Name">
+            <p id="new-circuit-error"></p>
+            <button id="create-circuit-btn">Create Circuit</button>
         </div>
     </div>
 

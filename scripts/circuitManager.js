@@ -60,10 +60,10 @@ class CircuitManager {
     }
 
     // Create a new circuit with an unused name and switch to it
-    newCircuit() {
+    newCircuit(name = this.getUnusedName()) {
         if (this.circuit !== null) this.save();
         this.unloadCircuit();
-        this.circuit = new Circuit(this.getUnusedName());
+        this.circuit = new Circuit(name);
         this.updateDisplayedCircuit();
         this.circuitNames.push(this.circuit.name);
         this.save();
