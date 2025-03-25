@@ -150,6 +150,8 @@ export class Circuit {
             }
         }
 
+        this.components.splice(index, 1);
+
         // if this component has a default name with the highest number, set the count
         // to the next highest number.
         if (comp.hasDefaultName()) {
@@ -166,7 +168,6 @@ export class Circuit {
             }
         }
 
-        this.components.splice(index, 1);
         comp.group.destroy();
         this.layer.draw();
         if (saveUpdate) this.update();

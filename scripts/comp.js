@@ -223,7 +223,7 @@ class Resistor extends Component {
             hideTerminals: data.ht ?? Resistor.defaults.hideTerminals,
             hideName: data.hn ?? Resistor.defaults.hideName,
             resistance: data.r ?? Resistor.defaults.resistance,
-            powerRating: data.p ?? Resistor.defualts.powerRating,
+            powerRating: data.p ?? Resistor.defaults.powerRating,
         };
         const s = grid.gridSize;
         this.terminals = [
@@ -317,7 +317,7 @@ class Capacitor extends Component {
             size: data.s ?? Capacitor.defaults.size,
             hideTerminals: data.ht ?? Capacitor.defaults.hideTerminals,
             hideName: data.hn ?? Capacitor.defaults.hideName,
-            capacitance: data.c ?? Capacitor.defualts.capacitance,
+            capacitance: data.c ?? Capacitor.defaults.capacitance,
             voltageRating: data.v ?? Capacitor.defaults.voltageRating,
         };
         const s = grid.gridSize;
@@ -406,7 +406,7 @@ class Capacitor extends Component {
 class Inductor extends Component {
     constructor(data, circuit) {
         if (data.x === undefined || data.y === undefined) throw new Error('Invalid inductor data');
-        super(ComponentType.INDUCTOR, data.gx, data.gy, 3, 2);
+        super(ComponentType.INDUCTOR, data.x, data.y, 3, 2);
         this.attributes = {
             name: data.n ?? `I${circuit.getCount(ComponentType.INDUCTOR) + 1}`,
             orientation: data.o ?? Inductor.defaults.orientation,
