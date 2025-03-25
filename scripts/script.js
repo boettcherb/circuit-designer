@@ -1,7 +1,7 @@
 import { stage } from "./stage.js";
 import { grid } from "./grid.js";
 import { circuitManager } from "./circuitManager.js";
-import { Battery, Capacitor, Resistor, Inductor } from "./comp.js";
+import { Component, ComponentType } from "./comp.js";
 
 grid.draw();
 
@@ -139,21 +139,23 @@ document.addEventListener('click', (e) => {
 });
 
 // If a component in the left sidebar is clicked, add it to the canvas.
-document.getElementById('battery-dropdown-item').addEventListener('click', () => {
+// TODO: Find the gx and gy of the middle of the canvas and add the component there
+// instead of placing each component at (2, 2).
+document.getElementById('battery-di').addEventListener('click', () => {
     const c = circuitManager.circuit;
-    c.addComponent(new Battery(2, 2, c));
+    c.addComponent(Component.createComponent({ t: ComponentType.BATTERY, x: 2, y: 2 }, c));
 });
-document.getElementById('resistor-dropdown-item').addEventListener('click', () => {
+document.getElementById('resistor-di').addEventListener('click', () => {
     const c = circuitManager.circuit;
-    c.addComponent(new Resistor(2, 2, c));
+    c.addComponent(Component.createComponent({ t: ComponentType.RESISTOR, x: 2, y: 2 }, c));
 });
-document.getElementById('capacitor-dropdown-item').addEventListener('click', () => {
+document.getElementById('capacitor-di').addEventListener('click', () => {
     const c = circuitManager.circuit;
-    c.addComponent(new Capacitor(2, 2, c));
+    c.addComponent(Component.createComponent({ t: ComponentType.CAPACITOR, x: 2, y: 2 }, c));
 });
-document.getElementById('inductor-dropdown-item').addEventListener('click', () => {
+document.getElementById('inductor-di').addEventListener('click', () => {
     const c = circuitManager.circuit;
-    c.addComponent(new Inductor(2, 2, c));
+    c.addComponent(Component.createComponent({ t: ComponentType.INDUCTOR, x: 2, y: 2 }, c));
 });
 
 

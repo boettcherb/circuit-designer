@@ -211,7 +211,7 @@ export class Component {
 }
 
 
-export class Resistor extends Component {
+class Resistor extends Component {
     constructor(gx, gy, circuit) {
         super(ComponentType.RESISTOR, gx, gy, 3, 2);
         this.resistance = 1000; // Ohms
@@ -276,7 +276,7 @@ export class Resistor extends Component {
 }
 
 
-export class Capacitor extends Component {
+class Capacitor extends Component {
     constructor(gx, gy, circuit) {
         super(ComponentType.CAPACITOR, gx, gy, 3, 2);
         this.capacitance = 1; // Microfarads
@@ -342,7 +342,7 @@ export class Capacitor extends Component {
 }
 
 
-export class Inductor extends Component {
+class Inductor extends Component {
     constructor(gx, gy, circuit) {
         super(ComponentType.INDUCTOR, gx, gy, 3, 2);
         this.inductance = 1; // Henries
@@ -407,7 +407,7 @@ export class Inductor extends Component {
     }
 }
 
-export class Battery extends Component {
+class Battery extends Component {
     constructor(gx, gy, circuit) {
         super(ComponentType.BATTERY, gx, gy, 4, 6);
         this.voltage = 5; // Volts
