@@ -9,8 +9,13 @@ export class Circuit {
         this.components = [];
         this.wires = [];
         this.nodes = []; // nodes not tied to components
+
         this.layer = new Konva.Layer();
         stage.add(this.layer);
+
+        // Used for generating unique names for components.
+        // Map storing the highest number currently used for a default component name.
+        this.counts = new Map();
 
         // The first element (index 0) is the selected component.
         // The other elements (index > 0) are the wires and nodes
@@ -118,6 +123,14 @@ export class Circuit {
         group.on('mouseover', () => { document.body.style.cursor = 'pointer'; });
         group.on('mouseout', () => { document.body.style.cursor = 'default'; });
 
+        // if the component has a default name, increment the count
+        if (component.hasDefaultName()) {
+            const num = parseInt(component.attributes.name.slice(1), 10);
+            if (isNaN(num)) throw new Error("Invalid default name!");
+            if (!this.counts.has(component.type) || num > this.counts.get(component.type))
+                this.counts.set(component.type, num);
+        }
+
         this.components.push(component);
         this.layer.add(group);
         this.layer.draw();
@@ -129,12 +142,30 @@ export class Circuit {
         if (comp === this.selected[0]) this.deselectAll();
         const index = this.components.findIndex(item => item === comp);
         if (index == -1) throw new Error("comp not in this.components!");
+
         // remove wires attached to this component
         for (const terminal of comp.terminals) {
             for (const wire of terminal.connections) {
                 this.deleteWire(wire, false);
             }
         }
+
+        // if this component has a default name with the highest number, set the count
+        // to the next highest number.
+        if (comp.hasDefaultName()) {
+            const num = parseInt(comp.attributes.name.slice(1), 10);
+            if (num === this.counts.get(comp.type)) {
+                let highest = 0;
+                for (const comp of this.components) {
+                    if (comp.type === comp.type && comp.hasDefaultName()) {
+                        const n = parseInt(comp.attributes.name.slice(1), 10);
+                        if (n > highest) highest = n;
+                    }
+                }
+                this.counts.set(comp.type, highest);
+            }
+        }
+
         this.components.splice(index, 1);
         comp.group.destroy();
         this.layer.draw();
@@ -419,7 +450,6 @@ export class Circuit {
     // Delete all components, wires, and nodes in the selected array (the
     // selected component and all wires and nodes connected to it).
     deleteAllInSelected() {
-        console.log(this.selected);
         for (const obj of this.selected) {
             if (obj instanceof Component) this.deleteComponent(obj, false);
             else if (obj instanceof Wire) this.deleteWire(obj, false);
@@ -436,6 +466,7 @@ export class Circuit {
         this.wires = [];
         this.nodes = [];
         this.selected = [];
+        this.counts.clear();
         this.layer.draw();
         if (saveUpdate) this.update();
     }
@@ -480,5 +511,10 @@ export class Circuit {
         this.build(this.history[this.historyIndex + 1]);
         this.history = historyCopy;
         this.historyIndex = historyIndexCopy + 1;
+    }
+
+    getCount(type) {
+        if (!this.counts.has(type)) this.counts.set(type, 0);
+        return this.counts.get(type);
     }
 }
