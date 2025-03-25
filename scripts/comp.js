@@ -200,10 +200,10 @@ export class Component {
 
     static createComponent(data, circuit) {
         switch (data.t) {
-            case ComponentType.BATTERY: return new Battery(data.x, data.y, circuit);
-            case ComponentType.RESISTOR: return new Resistor(data.x, data.y, circuit);
-            case ComponentType.CAPACITOR: return new Capacitor(data.x, data.y, circuit);
-            case ComponentType.INDUCTOR: return new Inductor(data.x, data.y, circuit);
+            case ComponentType.BATTERY: return new Battery(data, circuit);
+            case ComponentType.RESISTOR: return new Resistor(data, circuit);
+            case ComponentType.CAPACITOR: return new Capacitor(data, circuit);
+            case ComponentType.INDUCTOR: return new Inductor(data, circuit);
             default:
                 throw new Error('Invalid component type');
         }
@@ -212,14 +212,23 @@ export class Component {
 
 
 class Resistor extends Component {
-    constructor(gx, gy, circuit) {
-        super(ComponentType.RESISTOR, gx, gy, 3, 2);
-        this.resistance = 1000; // Ohms
-        this.powerRating = 0.25; // Watts
+    constructor(data, circuit) {
+        if (data.x === undefined || data.y === undefined)
+            throw new Error('Invalid resistor data');
+        super(ComponentType.RESISTOR, data.x, data.y, 3, 2);
+        this.attributes = {
+            name: data.n ?? `R${circuit.getCount(ComponentType.RESISTOR) + 1}`,
+            orientation: data.o ?? Resistor.defaults.orientation,
+            size: data.s ?? Resistor.defaults.size,
+            hideTerminals: data.ht ?? Resistor.defaults.hideTerminals,
+            hideName: data.hn ?? Resistor.defaults.hideName,
+            resistance: data.r ?? Resistor.defaults.resistance,
+            powerRating: data.p ?? Resistor.defualts.powerRating,
+        };
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this, circuit),
-            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x, data.y + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y + 1, this, circuit),
         ];
         const sWidth = s / 12;
         this.lines = [
@@ -270,21 +279,51 @@ class Resistor extends Component {
         ];
     }
 
+    static get defaults() {
+        return Object.freeze({
+            orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
+            size: 3,              // length in grid units
+            hideTerminals: false,
+            hideName: true,
+            resistance: 1000,     // Ohms
+            powerRating: 0.25,    // Watts
+        });
+    }
+
+    hasDefaultName() {
+        return this.attributes.name.match(/^R\d+$/) !== null;
+    }
+
     serialize() {
-        return { t: this.type, x: this.gx, y: this.gy, r: this.resistance, p: this.powerRating };
+        const result = { t: this.type, x: this.gx, y: this.gy, n: this.attributes.name };
+        if (this.attributes.orientation !== Resistor.defaults.orientation)     result.o = this.attributes.orientation;
+        if (this.attributes.size !== Resistor.defaults.size)                   result.s = this.attributes.size;
+        if (this.attributes.hideTerminals !== Resistor.defaults.hideTerminals) result.ht = this.attributes.hideTerminals;
+        if (this.attributes.hideName !== Resistor.defaults.hideName)           result.hn = this.attributes.hideName;
+        if (this.attributes.resistance !== Resistor.defaults.resistance)       result.r = this.attributes.resistance;
+        if (this.attributes.powerRating !== Resistor.defaults.powerRating)     result.p = this.attributes.powerRating;
+        return result;
     }
 }
 
 
 class Capacitor extends Component {
-    constructor(gx, gy, circuit) {
-        super(ComponentType.CAPACITOR, gx, gy, 3, 2);
-        this.capacitance = 1; // Microfarads
-        this.voltageRating = 5; // Volts
+    constructor(data, circuit) {
+        if (data.x === undefined || data.y === undefined) throw new Error('Invalid capacitor data');
+        super(ComponentType.CAPACITOR, data.x, data.y, 3, 2);
+        this.attributes = {
+            name: data.n ?? `C${circuit.getCount(ComponentType.CAPACITOR) + 1}`,
+            orientation: data.o ?? Capacitor.defaults.orientation,
+            size: data.s ?? Capacitor.defaults.size,
+            hideTerminals: data.ht ?? Capacitor.defaults.hideTerminals,
+            hideName: data.hn ?? Capacitor.defaults.hideName,
+            capacitance: data.c ?? Capacitor.defualts.capacitance,
+            voltageRating: data.v ?? Capacitor.defaults.voltageRating,
+        };
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this, circuit),
-            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x, data.y + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y + 1, this, circuit),
         ];
         const sWidth = s / 12;
         this.lines = [
@@ -336,20 +375,51 @@ class Capacitor extends Component {
         ];
     }
 
+    static get defaults() {
+        return Object.freeze({
+            orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
+            size: 3,              // length in grid units
+            hideTerminals: false,
+            hideName: true,
+            capacitance: 1,       // Microfarads
+            voltageRating: 5,     // Volts
+        });
+    }
+
+    hasDefaultName() {
+        return this.attributes.name.match(/^C\d+$/) !== null;
+    }
+
     serialize() {
-        return { t: this.type, x: this.gx, y: this.gy, c: this.capacitance, v: this.voltageRating };
+        const result = { t: this.type, x: this.gx, y: this.gy, n: this.attributes.name };
+        if (this.attributes.orientation !== Capacitor.defaults.orientation)     result.o = this.attributes.orientation;
+        if (this.attributes.size !== Capacitor.defaults.size)                   result.s = this.attributes.size;
+        if (this.attributes.hideTerminals !== Capacitor.defaults.hideTerminals) result.ht = this.attributes.hideTerminals;
+        if (this.attributes.hideName !== Capacitor.defaults.hideName)           result.hn = this.attributes.hideName;
+        if (this.attributes.capacitance !== Capacitor.defaults.capacitance)     result.c = this.attributes.capacitance;
+        if (this.attributes.voltageRating !== Capacitor.defaults.voltageRating) result.v = this.attributes.voltageRating;
+        return result;
     }
 }
 
 
 class Inductor extends Component {
-    constructor(gx, gy, circuit) {
-        super(ComponentType.INDUCTOR, gx, gy, 3, 2);
-        this.inductance = 1; // Henries
+    constructor(data, circuit) {
+        if (data.x === undefined || data.y === undefined) throw new Error('Invalid inductor data');
+        super(ComponentType.INDUCTOR, data.gx, data.gy, 3, 2);
+        this.attributes = {
+            name: data.n ?? `I${circuit.getCount(ComponentType.INDUCTOR) + 1}`,
+            orientation: data.o ?? Inductor.defaults.orientation,
+            size: data.s ?? Inductor.defaults.size,
+            hideTerminals: data.ht ?? Inductor.defaults.hideTerminals,
+            hideName: data.hn ?? Inductor.defaults.hideName,
+            inductance: data.i ?? Inductor.defaults.inductance,
+            maxCurrent: data.c ?? Inductor.defaults.maxCurrent,
+        };
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.BIDIRECTIONAL, gx, gy + 1, this, circuit),
-            new Node(NodeType.BIDIRECTIONAL, gx + 3, gy + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x, data.y + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y + 1, this, circuit),
         ];
         const sWidth = s / 12;
         this.lines = [
@@ -402,20 +472,50 @@ class Inductor extends Component {
         ];
     }
 
+    static get defaults() {
+        return Object.freeze({
+            orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
+            size: 3,              // length in grid units
+            hideTerminals: false,
+            hideName: true,
+            inductance: 0.001,    // Henrys
+            maxCurrent: 0.5,      // Amps
+        });
+    }
+
+    hasDefaultName() {
+        return this.attributes.name.match(/^I\d+$/) !== null;
+    }
+
     serialize() {
-        return { t: this.type, x: this.gx, y: this.gy, i: this.inductance };
+        const result = { t: this.type, x: this.gx, y: this.gy, n: this.attributes.name };
+        if (this.attributes.orientation !== Inductor.defaults.orientation)     result.o = this.attributes.orientation;
+        if (this.attributes.size !== Inductor.defaults.size)                   result.s = this.attributes.size;
+        if (this.attributes.hideTerminals !== Inductor.defaults.hideTerminals) result.ht = this.attributes.hideTerminals;
+        if (this.attributes.hideName !== Inductor.defaults.hideName)           result.hn = this.attributes.hideName;
+        if (this.attributes.inductance !== Inductor.defaults.inductance)       result.i = this.attributes.inductance;
+        if (this.attributes.maxCurrent !== Inductor.defaults.maxCurrent)       result.c = this.attributes.maxCurrent;
+        return result;
     }
 }
 
 class Battery extends Component {
-    constructor(gx, gy, circuit) {
-        super(ComponentType.BATTERY, gx, gy, 4, 6);
-        this.voltage = 5; // Volts
-        this.maxCurrent = 0.5; // Amps
+    constructor(data, circuit) {
+        if (data.x === undefined || data.y === undefined) throw new Error('Invalid battery data');
+        super(ComponentType.BATTERY, data.x, data.y, 4, 6);
+        this.attributes = {
+            name: data.n ?? `B${circuit.getCount(ComponentType.BATTERY) + 1}`,
+            orientation: data.o ?? Battery.defaults.orientation,
+            size: data.s ?? Battery.defaults.size,
+            hideTerminals: data.ht ?? Battery.defaults.hideTerminals,
+            hideName: data.hn ?? Battery.defaults.hideName,
+            voltage: data.v ?? Battery.defaults.voltage,
+            maxCurrent: data.c ?? Battery.defaults.maxCurrent,
+        }
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.OUTPUT, gx + 2, gy, this, circuit),
-            new Node(NodeType.INPUT, gx + 2, gy + 6, this, circuit),
+            new Node(NodeType.OUTPUT, data.x + 2, data.y, this, circuit),
+            new Node(NodeType.INPUT, data.x + 2, data.y + 6, this, circuit),
         ];
         const sWidth = s / 12;
         this.lines = [
@@ -481,7 +581,29 @@ class Battery extends Component {
         ];
     }
 
+    static get defaults() {
+        return Object.freeze({
+            orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
+            size: 4,              // length in grid units
+            hideTerminals: false,
+            hideName: true,
+            voltage: 5,           // Volts
+            maxCurrent: 0.5,      // Amps
+        });
+    }
+
+    hasDefaultName() {
+        return this.attributes.name.match(/^B\d+$/) !== null;
+    }
+
     serialize() {
-        return { t: this.type, x: this.gx, y: this.gy, v: this.voltage, c: this.maxCurrent };
+        const result = { t: this.type, x: this.gx, y: this.gy, n: this.attributes.name };
+        if (this.attributes.orientation !== Battery.defaults.orientation)     result.o = this.attributes.orientation;
+        if (this.attributes.size !== Battery.defaults.size)                   result.s = this.attributes.size;
+        if (this.attributes.hideTerminals !== Battery.defaults.hideTerminals) result.ht = this.attributes.hideTerminals;
+        if (this.attributes.hideName !== Battery.defaults.hideName)           result.hn = this.attributes.hideName;
+        if (this.attributes.voltage !== Battery.defaults.voltage)             result.v = this.attributes.voltage;
+        if (this.attributes.maxCurrent !== Battery.defaults.maxCurrent)       result.c = this.attributes.maxCurrent;
+        return result;
     }
 }
