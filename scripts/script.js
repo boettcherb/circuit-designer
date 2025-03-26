@@ -155,14 +155,14 @@ document.addEventListener('showCompAttrs', (e) => {
     const increaseSizeBtn = document.createElement('button');
     increaseSizeBtn.textContent = 'Increase Size';
     increaseSizeBtn.addEventListener('click', () => {
-        comp.setSize(comp.attributes.size + 1);
+        comp.resize(comp.attributes.size + 1);
     });
     modalContent.appendChild(increaseSizeBtn);
     
     const decreaseSizeBtn = document.createElement('button');
     decreaseSizeBtn.textContent = 'Decrease Size';
     decreaseSizeBtn.addEventListener('click', () => {
-        comp.setSize(comp.attributes.size - 1);
+        comp.resize(comp.attributes.size - 1);
     });
     modalContent.appendChild(decreaseSizeBtn);
 });

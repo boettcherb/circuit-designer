@@ -57,15 +57,13 @@ export class Circuit {
         const group = new Konva.Group({
             x: grid.offsetX + component.gx * grid.gridSize,
             y: grid.offsetY + component.gy * grid.gridSize,
-            width: component.gw * grid.gridSize,
-            height: component.gh * grid.gridSize,
             draggable: true,
         });
         component.addGroup(group);
 
-        // add all lines and terminals to the group
-        for (const line of component.lines)
-            group.add(line);
+        // add all shapes and terminals to the group
+        for (const shape of component.shapes)
+            group.add(shape);
         for (const terminal of component.terminals) {
             group.add(terminal.circle);
             terminal.circle.on('click', (e) => {

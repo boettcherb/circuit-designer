@@ -169,12 +169,10 @@ export class Node {
 
 
 export class Component {
-    constructor(type, gx, gy, gw, gh) {
+    constructor(type, gx, gy) {
         this.type = type;
         this.gx = gx;
         this.gy = gy;
-        this.gw = gw;
-        this.gh = gh;
         this.group = null;
         this.terminals = [];
     }
@@ -208,6 +206,32 @@ export class Component {
                 throw new Error('Invalid component type');
         }
     }
+    
+    resize(size) {
+        if (size === this.attributes.size || size < 1) return;
+        const sizeChange = size / this.attributes.size;
+        for (const shape of this.shapes) {
+            if (shape instanceof Konva.Line) {
+                shape.points(shape.points().map(point => point * sizeChange));
+            } else if (shape instanceof Konva.Rect) {
+                shape.x(shape.x() * sizeChange);
+                shape.y(shape.y() * sizeChange);
+                shape.width(shape.width() * sizeChange);
+                shape.height(shape.height() * sizeChange);
+            }
+        }
+        for (const terminal of this.terminals) {
+            terminal.gx = this.gx + (terminal.gx - this.gx) * sizeChange;
+            terminal.gy = this.gy + (terminal.gy - this.gy) * sizeChange;
+            terminal.circle.x(terminal.circle.x() * sizeChange);
+            terminal.circle.y(terminal.circle.y() * sizeChange);
+            for (const wire of terminal.connections) {
+                wire.line.points([...wire.startNode.getPos(), ...wire.endNode.getPos()]);
+            }
+        }
+        this.attributes.size = size;
+        this.circuit.update();
+    }
 }
 
 
@@ -215,11 +239,12 @@ class Resistor extends Component {
     constructor(data, circuit) {
         if (data.x === undefined || data.y === undefined)
             throw new Error('Invalid resistor data');
-        super(ComponentType.RESISTOR, data.x, data.y, 3, 2);
+        super(ComponentType.RESISTOR, data.x, data.y);
+        this.circuit = circuit;
         this.attributes = {
             name: data.n ?? `R${circuit.getCount(ComponentType.RESISTOR) + 1}`,
             orientation: data.o ?? Resistor.defaults.orientation,
-            size: data.s ?? Resistor.defaults.size,
+            size: Resistor.defaults.size,
             hideTerminals: data.ht ?? Resistor.defaults.hideTerminals,
             hideName: data.hn ?? Resistor.defaults.hideName,
             resistance: data.r ?? Resistor.defaults.resistance,
@@ -227,56 +252,40 @@ class Resistor extends Component {
         };
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.BIDIRECTIONAL, data.x, data.y + 1, this, circuit),
-            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x, data.y, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y, this, circuit),
         ];
         const sWidth = s / 12;
-        this.lines = [
-            // first lead
+        this.shapes = [
             new Konva.Line({
                 points: [
-                    0, s,
-                    0.75 * s, s
-                ],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // zigzags
-            new Konva.Line({
-                points: [
-                    0.75 * s, s,
-                    0.875 * s, 0.5 * s,
-                    1.125 * s, 1.5 * s,
-                    1.375 * s, 0.5 * s,
-                    1.625 * s, 1.5 * s,
-                    1.875 * s, 0.5 * s,
-                    2.125 * s, 1.5 * s,
-                    2.25 * s, s,
+                    0, 0,
+                    0.75 * s, 0,
+                    0.875 * s, -0.5 * s,
+                    1.125 * s, 0.5 * s,
+                    1.375 * s, -0.5 * s,
+                    1.625 * s, 0.5 * s,
+                    1.875 * s, -0.5 * s,
+                    2.125 * s, 0.5 * s,
+                    2.25 * s, 0,
+                    3 * s, 0
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
                 lineCap: 'round',
                 lineJoin: 'round',
             }),
-            // second lead
-            new Konva.Line({
-                points: [
-                    2.25 * s, s,
-                    3 * s, s
-                ],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
             // hitbox
             new Konva.Rect({
                 x: 0,
-                y: 0.5 * s,
+                y: -0.5 * s,
                 width: 3 * s,
                 height: s,
                 fill: 'transparent',
                 strokeWidth: 0,
             }),
         ];
+        if (data.s !== undefined) this.resize(data.s);
     }
 
     static get defaults() {
@@ -292,6 +301,10 @@ class Resistor extends Component {
 
     hasDefaultName() {
         return this.attributes.name.match(/^R\d+$/) !== null;
+    }
+
+    getComponentTypeName() {
+        return "Resistor";
     }
 
     serialize() {
@@ -310,11 +323,12 @@ class Resistor extends Component {
 class Capacitor extends Component {
     constructor(data, circuit) {
         if (data.x === undefined || data.y === undefined) throw new Error('Invalid capacitor data');
-        super(ComponentType.CAPACITOR, data.x, data.y, 3, 2);
+        super(ComponentType.CAPACITOR, data.x, data.y);
+        this.circuit = circuit;
         this.attributes = {
             name: data.n ?? `C${circuit.getCount(ComponentType.CAPACITOR) + 1}`,
             orientation: data.o ?? Capacitor.defaults.orientation,
-            size: data.s ?? Capacitor.defaults.size,
+            size: Capacitor.defaults.size,
             hideTerminals: data.ht ?? Capacitor.defaults.hideTerminals,
             hideName: data.hn ?? Capacitor.defaults.hideName,
             capacitance: data.c ?? Capacitor.defaults.capacitance,
@@ -322,16 +336,16 @@ class Capacitor extends Component {
         };
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.BIDIRECTIONAL, data.x, data.y + 1, this, circuit),
-            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x, data.y, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y, this, circuit),
         ];
         const sWidth = s / 12;
-        this.lines = [
+        this.shapes = [
             // first lead
             new Konva.Line({
                 points: [
-                    0, s,
-                    1.2 * s, s,
+                    0, 0,
+                    1.2 * s, 0,
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
@@ -339,8 +353,8 @@ class Capacitor extends Component {
             // first plate
             new Konva.Line({
                 points: [
-                    1.2 * s, 0.3 * s,
-                    1.2 * s, 1.7 * s,
+                    1.2 * s, -0.7 * s,
+                    1.2 * s, 0.7 * s,
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
@@ -348,8 +362,8 @@ class Capacitor extends Component {
             // second plate
             new Konva.Line({
                 points: [
-                    1.8 * s, 0.3 * s,
-                    1.8 * s, 1.7 * s,
+                    1.8 * s, -0.7 * s,
+                    1.8 * s, 0.7 * s,
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
@@ -357,8 +371,8 @@ class Capacitor extends Component {
             // second lead
             new Konva.Line({
                 points: [
-                    1.8 * s, s,
-                    3 * s, s,
+                    1.8 * s, 0,
+                    3 * s, 0,
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
@@ -366,13 +380,14 @@ class Capacitor extends Component {
             // hitbox
             new Konva.Rect({
                 x: 0,
-                y: 0.5 * s,
+                y: -0.5 * s,
                 width: 3 * s,
                 height: s,
                 fill: 'transparent',
                 strokeWidth: 0,
             }),
         ];
+        if (data.s !== undefined) this.resize(data.s);
     }
 
     static get defaults() {
@@ -388,6 +403,10 @@ class Capacitor extends Component {
 
     hasDefaultName() {
         return this.attributes.name.match(/^C\d+$/) !== null;
+    }
+
+    getComponentTypeName() {
+        return "Capacitor";
     }
 
     serialize() {
@@ -406,11 +425,12 @@ class Capacitor extends Component {
 class Inductor extends Component {
     constructor(data, circuit) {
         if (data.x === undefined || data.y === undefined) throw new Error('Invalid inductor data');
-        super(ComponentType.INDUCTOR, data.x, data.y, 3, 2);
+        super(ComponentType.INDUCTOR, data.x, data.y);
+        this.circuit = circuit;
         this.attributes = {
             name: data.n ?? `I${circuit.getCount(ComponentType.INDUCTOR) + 1}`,
             orientation: data.o ?? Inductor.defaults.orientation,
-            size: data.s ?? Inductor.defaults.size,
+            size: Inductor.defaults.size,
             hideTerminals: data.ht ?? Inductor.defaults.hideTerminals,
             hideName: data.hn ?? Inductor.defaults.hideName,
             inductance: data.i ?? Inductor.defaults.inductance,
@@ -418,35 +438,35 @@ class Inductor extends Component {
         };
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.BIDIRECTIONAL, data.x, data.y + 1, this, circuit),
-            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y + 1, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x, data.y, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y, this, circuit),
         ];
         const sWidth = s / 12;
-        this.lines = [
+        this.shapes = [
             // First lead
             new Konva.Line({
-                points: [0, s, 0.5 * s, s],
+                points: [0, 0, 0.5 * s, 0],
                 stroke: 'black',
                 strokeWidth: sWidth,
             }),
             // Coil
             new Konva.Line({
                 points: [
-                    0.5 * s, s,
-                    0.825 * s, 0.5 * s,
-                    1.15 * s, s,
-                    1.05 * s, 1.3 * s,
-                    0.95 * s, s,
-                    1.275 * s, 0.5 * s,
-                    1.6 * s, s,
-                    1.5 * s, 1.3 * s,
-                    1.4 * s, s,
-                    1.725 * s, 0.5 * s,
-                    2.05 * s, s,
-                    1.95 * s, 1.3 * s,
-                    1.85 * s, s,
-                    2.175 * s, 0.5 * s,
-                    2.5 * s, s,
+                    0.5 * s, 0,
+                    0.825 * s, -0.5 * s,
+                    1.15 * s, 0,
+                    1.05 * s, 0.3 * s,
+                    0.95 * s, 0,
+                    1.275 * s, -0.5 * s,
+                    1.6 * s, 0,
+                    1.5 * s, 0.3 * s,
+                    1.4 * s, 0,
+                    1.725 * s, -0.5 * s,
+                    2.05 * s, 0,
+                    1.95 * s, 0.3 * s,
+                    1.85 * s, 0,
+                    2.175 * s, -0.5 * s,
+                    2.5 * s, 0,
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
@@ -456,20 +476,21 @@ class Inductor extends Component {
             }),
             // Second lead
             new Konva.Line({
-                points: [2.5 * s, s, 3 * s, s],
+                points: [2.5 * s, 0, 3 * s, 0],
                 stroke: 'black',
                 strokeWidth: sWidth,
             }),
             // Hitbox
             new Konva.Rect({
                 x: 0,
-                y: 0.5 * s,
+                y: -0.5 * s,
                 width: 3 * s,
                 height: s,
                 fill: 'transparent',
                 strokeWidth: 0,
             }),
         ];
+        if (data.s !== undefined) this.resize(data.s);
     }
 
     static get defaults() {
@@ -487,6 +508,10 @@ class Inductor extends Component {
         return this.attributes.name.match(/^I\d+$/) !== null;
     }
 
+    getComponentTypeName() {
+        return "Inductor";
+    }
+
     serialize() {
         const result = { t: this.type, x: this.gx, y: this.gy, n: this.attributes.name };
         if (this.attributes.orientation !== Inductor.defaults.orientation)     result.o = this.attributes.orientation;
@@ -499,14 +524,16 @@ class Inductor extends Component {
     }
 }
 
+
 class Battery extends Component {
     constructor(data, circuit) {
         if (data.x === undefined || data.y === undefined) throw new Error('Invalid battery data');
-        super(ComponentType.BATTERY, data.x, data.y, 4, 6);
+        super(ComponentType.BATTERY, data.x, data.y);
+        this.circuit = circuit;
         this.attributes = {
             name: data.n ?? `B${circuit.getCount(ComponentType.BATTERY) + 1}`,
             orientation: data.o ?? Battery.defaults.orientation,
-            size: data.s ?? Battery.defaults.size,
+            size: Battery.defaults.size,
             hideTerminals: data.ht ?? Battery.defaults.hideTerminals,
             hideName: data.hn ?? Battery.defaults.hideName,
             voltage: data.v ?? Battery.defaults.voltage,
@@ -514,20 +541,20 @@ class Battery extends Component {
         }
         const s = grid.gridSize;
         this.terminals = [
-            new Node(NodeType.OUTPUT, data.x + 2, data.y, this, circuit),
-            new Node(NodeType.INPUT, data.x + 2, data.y + 6, this, circuit),
+            new Node(NodeType.OUTPUT, data.x, data.y, this, circuit),
+            new Node(NodeType.INPUT, data.x, data.y + 6, this, circuit),
         ];
         const sWidth = s / 12;
-        this.lines = [
+        this.shapes = [
             // first lead
             new Konva.Line({
-                points: [2 * s, 0, 2 * s, 0.8 * s],
+                points: [0, 0, 0, 0.8 * s],
                 stroke: 'black',
                 strokeWidth: sWidth,
             }),
             // hitbox
             new Konva.Rect({
-                x: 0.8 * s,
+                x: -1.2 * s,
                 y: 0.8 * s,
                 width: 2.4 * s,
                 height: 4.4 * s,
@@ -538,11 +565,11 @@ class Battery extends Component {
             // battery outline
             new Konva.Line({
                 points: [
-                    0.8 * s, 0.8 * s,
-                    0.8 * s, 5.2 * s,
-                    3.2 * s, 5.2 * s,
-                    3.2 * s, 0.8 * s,
-                    0.8 * s, 0.8 * s,
+                    -1.2 * s, 0.8 * s,
+                    -1.2 * s, 5.2 * s,
+                    1.2 * s, 5.2 * s,
+                    1.2 * s, 0.8 * s,
+                    -1.2 * s, 0.8 * s,
                 ],
                 stroke: 'black',
                 lineCap: 'round',
@@ -552,39 +579,40 @@ class Battery extends Component {
             // Plus sign
             new Konva.Line({
                 points: [
-                    1.5 * s, 1.6 * s,
-                    2.5 * s, 1.6 * s],
+                    -0.5 * s, 1.6 * s,
+                    0.5 * s, 1.6 * s],
                 stroke: 'black',
                 strokeWidth: sWidth,
             }),
             new Konva.Line({
                 points: [
-                    2 * s, 1.1 * s,
-                    2 * s, 2.1 * s],
+                    0, 1.1 * s,
+                    0, 2.1 * s],
                 stroke: 'black',
                 strokeWidth: sWidth,
             }),
             // Minus sign
             new Konva.Line({
                 points: [
-                    1.5 * s, 4.4 * s,
-                    2.5 * s, 4.4 * s],
+                    -0.5 * s, 4.4 * s,
+                    0.5 * s, 4.4 * s],
                 stroke: 'black',
                 strokeWidth: sWidth,
             }),
             // second lead
             new Konva.Line({
-                points: [2 * s, 6 * s, 2 * s, 5.2 * s],
+                points: [0, 6 * s, 0, 5.2 * s],
                 stroke: 'black',
                 strokeWidth: sWidth,
             }),
         ];
+        if (data.s !== undefined) this.resize(data.s);
     }
 
     static get defaults() {
         return Object.freeze({
             orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
-            size: 4,              // length in grid units
+            size: 6,              // height in grid units
             hideTerminals: false,
             hideName: true,
             voltage: 5,           // Volts
@@ -594,6 +622,10 @@ class Battery extends Component {
 
     hasDefaultName() {
         return this.attributes.name.match(/^B\d+$/) !== null;
+    }
+
+    getComponentTypeName() {
+        return "Battery";
     }
 
     serialize() {
