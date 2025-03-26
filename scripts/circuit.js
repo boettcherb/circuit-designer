@@ -413,6 +413,11 @@ export class Circuit {
             }
         }
         this.layer.draw();
+        // send a custom event to open the component properties modal
+        if (obj instanceof Component) {
+            const event = new CustomEvent('showCompAttrs', { detail: { comp: obj } });
+            document.dispatchEvent(event);
+        }
     }
 
     deselectAll() {
@@ -427,6 +432,7 @@ export class Circuit {
             }
         }
         this.selected = [];
+        document.dispatchEvent(new CustomEvent('hideCompAttrs'));
     }
 
     // Deselect all components, and then reselect the main selected component.
@@ -458,6 +464,7 @@ export class Circuit {
         }
         this.selected = [];
         this.update();
+        document.dispatchEvent(new CustomEvent('hideCompAttrs'));
     }
 
     // Delete all components, wires, and nodes in the circuit.
@@ -470,6 +477,7 @@ export class Circuit {
         this.counts.clear();
         this.layer.draw();
         if (saveUpdate) this.update();
+        document.dispatchEvent(new CustomEvent('hideCompAttrs'));
     }
     
     serialize() {

@@ -90,3 +90,13 @@
 .selected-circuit {
     background-color: #f0f0f0;  /* Light gray background */
 }
+
+#component-modal {
+    display: none;         /* Hidden by default */
+    position: absolute;     /* Stay in place */
+    width: 200px;           /* Fixed width */
+    top: 60px;              /* 60px from the top */
+    right: 20px;            /* 20px from the right */
+    z-index: 100;           /* Display on top */
+    background-color: #f4f4f4; /* Gray background */
+}

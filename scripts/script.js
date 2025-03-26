@@ -138,6 +138,40 @@ document.addEventListener('click', (e) => {
     }
 });
 
+document.addEventListener('showCompAttrs', (e) => {
+    const modal = document.getElementById('component-modal');
+    const modalHeader = modal.firstElementChild;
+    const modalContent = modalHeader.nextElementSibling;
+    modal.style.display = 'block';
+    const comp = e.detail.comp;
+    modalHeader.textContent = `${comp.getComponentTypeName()} Attributes`;
+    modalContent.innerHTML = '';
+    for (const [key, value] of Object.entries(comp.attributes)) {
+        const p = document.createElement('p');
+        p.textContent = `${key}: ${value}`;
+        modalContent.appendChild(p);
+    }
+
+    const increaseSizeBtn = document.createElement('button');
+    increaseSizeBtn.textContent = 'Increase Size';
+    increaseSizeBtn.addEventListener('click', () => {
+        comp.setSize(comp.attributes.size + 1);
+    });
+    modalContent.appendChild(increaseSizeBtn);
+    
+    const decreaseSizeBtn = document.createElement('button');
+    decreaseSizeBtn.textContent = 'Decrease Size';
+    decreaseSizeBtn.addEventListener('click', () => {
+        comp.setSize(comp.attributes.size - 1);
+    });
+    modalContent.appendChild(decreaseSizeBtn);
+});
+    
+document.addEventListener('hideCompAttrs', () => {
+    document.getElementById('component-modal').style.display = 'none';
+});
+
+
 // If a component in the left sidebar is clicked, add it to the canvas.
 // TODO: Find the gx and gy of the middle of the canvas and add the component there
 // instead of placing each component at (2, 2).
