@@ -5,15 +5,39 @@ import { Component, ComponentType } from "./comp.js";
 
 grid.draw();
 
+// Debounce function to limit the rate at which a function can fire
+function debounce(callback, delay) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => callback(...args), delay);
+    };
+}
+
+// Throttle function to limit the rate at which a function can fire
+function throttle(callback, delay) {
+    let lastCall = 0;
+    return (...args) => {
+        const now = Date.now();
+        if (now - lastCall >= delay) {
+            lastCall = now;
+            callback(...args);
+        }
+    };
+}
+
 // Handle key presses
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (e.shiftKey) circuitManager.circuit.deleteAllInSelected();
-        else circuitManager.circuit.deleteSelected();
-    }
     if (e.ctrlKey && e.key === 's') {
         e.preventDefault(); // Prevent the browser’s default save dialog
         circuitManager.save();
+    }
+    // Ignore this event if the user is typing in an input field
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')
+        return;
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (e.shiftKey) circuitManager.circuit.deleteAllInSelected();
+        else circuitManager.circuit.deleteSelected();
     }
     if (e.ctrlKey && e.key === 'z') circuitManager.circuit.undo();
     if (e.ctrlKey && e.key === 'y') circuitManager.circuit.redo();
@@ -51,9 +75,7 @@ stage.on('mousedown touchstart', () => {
 });
 stage.on('mousemove touchmove', () => {
     click = false;
-    if (!grid.isDragging) {
-        return;
-    }
+    if (!grid.isDragging) return;
     
     const curMousePos = stage.getPointerPosition();
     const dx = curMousePos.x - lastMousePos.x;
@@ -73,14 +95,8 @@ stage.on('mouseup touchend', () => {
 // every 30 milliseconds to prevent scrolling too fast.
 const GRIDSIZE_MIN = 5;
 const GRIDSIZE_MAX = 200;
-const GRID_RESIZE_TIMEOUT = 30;
-let throttle = false;
-stage.on('wheel', (e) => {
+stage.on('wheel', throttle((e) => {
     e.evt.preventDefault();
-    if (throttle) {
-        return;
-    }
-    throttle = true;
     const oldGridSize = grid.gridSize;
 
     // update the origin of the grid so that the scroll happens relative
@@ -107,9 +123,7 @@ stage.on('wheel', (e) => {
     // reposition and scale the components
     circuitManager.circuit.repositionComps();
     circuitManager.circuit.scaleComps(oldGridSize);
-
-    setTimeout(() => { throttle = false }, GRID_RESIZE_TIMEOUT);
-});
+}, 30)); // throttle the scroll event to every 30 milliseconds
 
 // handle menu button presses
 document.getElementById('new-circuit-menu-btn').addEventListener('click', openNewCircuitModal);
@@ -128,49 +142,6 @@ for (const sidebarBtn of document.getElementsByClassName('sidebar-btn')) {
         icon.textContent = open ? 'keyboard_arrow_right' : 'keyboard_arrow_down';
     });
 }
-
-// Close a modal if user clicks outside of it or on the close button
-document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal-background')) {
-        e.target.style.display = 'none';
-    } else if (e.target.classList.contains('close-btn')) {
-        e.target.parentElement.parentElement.parentElement.style.display = 'none';
-    }
-});
-
-document.addEventListener('showCompAttrs', (e) => {
-    const modal = document.getElementById('component-modal');
-    const modalHeader = modal.firstElementChild;
-    const modalContent = modalHeader.nextElementSibling;
-    modal.style.display = 'block';
-    const comp = e.detail.comp;
-    modalHeader.textContent = `${comp.getComponentTypeName()} Attributes`;
-    modalContent.innerHTML = '';
-    for (const [key, value] of Object.entries(comp.attributes)) {
-        const p = document.createElement('p');
-        p.textContent = `${key}: ${value}`;
-        modalContent.appendChild(p);
-    }
-
-    const increaseSizeBtn = document.createElement('button');
-    increaseSizeBtn.textContent = 'Increase Size';
-    increaseSizeBtn.addEventListener('click', () => {
-        comp.resize(comp.attributes.size + 1);
-    });
-    modalContent.appendChild(increaseSizeBtn);
-    
-    const decreaseSizeBtn = document.createElement('button');
-    decreaseSizeBtn.textContent = 'Decrease Size';
-    decreaseSizeBtn.addEventListener('click', () => {
-        comp.resize(comp.attributes.size - 1);
-    });
-    modalContent.appendChild(decreaseSizeBtn);
-});
-    
-document.addEventListener('hideCompAttrs', () => {
-    document.getElementById('component-modal').style.display = 'none';
-});
-
 
 // If a component in the left sidebar is clicked, add it to the canvas.
 // TODO: Find the gx and gy of the middle of the canvas and add the component there
@@ -195,6 +166,15 @@ document.getElementById('inductor-di').addEventListener('click', () => {
 
 
 // Handle modals
+
+// Close a modal if the user clicks outside of it or on the close button
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-background')) {
+        e.target.style.display = 'none';
+    } else if (e.target.classList.contains('close-btn')) {
+        e.target.parentElement.parentElement.parentElement.style.display = 'none';
+    }
+});
 
 function openMyCircuitsModal() {
     const circuitList = document.getElementById('my-circuits-list');
@@ -311,4 +291,55 @@ document.getElementById('create-circuit-btn').addEventListener('click', () => {
         const p = document.getElementById('new-circuit-error');
         p.textContent = 'Invalid name.';
     }
+});
+
+let selectedComp = null;
+function openComponentAttributesModal() {
+    if (selectedComp === null) throw new Error('No component selected');
+    const modal = document.getElementById('comp-attributes-modal');
+    modal.style.display = 'block';
+    const modalHeader = modal.firstElementChild;
+    modalHeader.textContent = `${selectedComp.getComponentTypeName()} Attributes`;
+
+    document.getElementById('hide-comp-name-input').checked = selectedComp.attributes.hideName;
+    document.getElementById('comp-name-input').value = selectedComp.attributes.name;
+    document.getElementById('comp-size-input').value = selectedComp.attributes.size;
+};
+
+
+// Handle component attributes modal inputs
+document.getElementById('hide-comp-name-input').addEventListener('click', () => {
+    if (selectedComp === null) throw new Error('No component selected');
+    const hideNameInput = document.getElementById('hide-comp-name-input');
+    selectedComp.hideName(hideNameInput.checked);
+});
+document.getElementById('comp-name-input').addEventListener('input', debounce((e) => {
+    if (selectedComp === null) throw new Error('No component selected');
+    selectedComp.rename(e.target.value);
+}, 1000)); // Debounce the input to save every 1 second
+document.getElementById('comp-size-input').addEventListener('input', (e) => {
+    if (selectedComp === null) throw new Error('No component selected');
+    const val = parseInt(e.target.value);
+    if (!isNaN(val) && isFinite(val)) selectedComp.resize(val);
+});
+document.getElementById('reset-comp-size-btn').addEventListener('click', () => {
+    if (selectedComp === null) throw new Error('No component selected');
+    selectedComp.resize(selectedComp.constructor.defaults.size);
+    document.getElementById('comp-size-input').value = selectedComp.attributes.size;
+});
+document.getElementById('delete-comp-btn').addEventListener('click', () => {
+    if (selectedComp === null) throw new Error('No component selected');
+    circuitManager.circuit.deleteSelected();
+    document.getElementById('comp-attributes-modal').style.display = 'none';
+});
+
+
+// Handle custom events to show/hide the component attributes modal
+document.addEventListener('showCompAttrs', (e) => {
+    selectedComp = e.detail.comp;
+    openComponentAttributesModal();
+});
+document.addEventListener('hideCompAttrs', () => {
+    selectedComp = null;
+    document.getElementById('comp-attributes-modal').style.display = 'none';
 });

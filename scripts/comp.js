@@ -206,6 +206,11 @@ export class Component {
                 throw new Error('Invalid component type');
         }
     }
+
+    rename(name) {
+        this.attributes.name = name;
+        this.circuit.update();
+    }
     
     resize(size) {
         if (size === this.attributes.size || size < 1) return;
@@ -230,6 +235,11 @@ export class Component {
             }
         }
         this.attributes.size = size;
+        this.circuit.update();
+    }
+
+    hideName(hide) {
+        this.attributes.hideName = hide;
         this.circuit.update();
     }
 }

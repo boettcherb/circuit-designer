@@ -91,7 +91,7 @@
     background-color: #f0f0f0;  /* Light gray background */
 }
 
-#component-modal {
+#comp-attributes-modal {
     display: none;         /* Hidden by default */
     position: absolute;     /* Stay in place */
     width: 200px;           /* Fixed width */
@@ -99,4 +99,11 @@
     right: 20px;            /* 20px from the right */
     z-index: 100;           /* Display on top */
     background-color: #f4f4f4; /* Gray background */
+}
+
+#comp-attributes-data {
+    display: flex;                  /* Use flexbox layout with horizontal axis */
+    flex-direction: column;         /* Use vertical axis in flexbox layout */
+    justify-content: space-between; /* Put extra space between name and value */
+    padding: 10px 5px;             /* 10px padding top/bottom, 15px padding on sides */
 }

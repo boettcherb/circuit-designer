@@ -96,9 +96,24 @@
             <button id="create-circuit-btn">Create Circuit</button>
         </div>
     </div>
-    <div id="component-modal">
+    <div id="comp-attributes-modal">
         <h4></h4>
-        <div></div>
+        <div id="comp-attributes-data">
+            <div>
+                <label for="component-name">Name:</label>
+                <input type="text" id="comp-name-input" placeholder="Component Name">
+            </div>
+            <div>
+                <input type="checkbox" id="hide-comp-name-input" name="hide-name" value="">
+                <label for="hide-name"> Hide Name</label>
+            </div>
+            <div>
+                <label for="comp-size-input">Size:</label>
+                <input type="number" id="comp-size-input" placeholder="Size" min="1" max="100">
+                <button id="reset-comp-size-btn">Reset Size</button>
+            </div>
+            <button id="delete-comp-btn">Delete Component</button>
+        </div>
     </div>
 
     <!-- Scripts -->
