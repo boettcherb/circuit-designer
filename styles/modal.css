@@ -94,7 +94,7 @@
 #comp-attributes-modal {
     display: none;         /* Hidden by default */
     position: absolute;     /* Stay in place */
-    width: 200px;           /* Fixed width */
+    width: 250px;           /* Fixed width */
     top: 60px;              /* 60px from the top */
     right: 20px;            /* 20px from the right */
     z-index: 100;           /* Display on top */

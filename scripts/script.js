@@ -293,44 +293,103 @@ document.getElementById('create-circuit-btn').addEventListener('click', () => {
     }
 });
 
+
+const compAttrModal = document.getElementById('comp-attributes-modal');
+const compNameInput = document.getElementById('comp-name-input');
+const compSizeInput = document.getElementById('comp-size-input');
+const resetSizeInput = document.getElementById('reset-comp-size-btn');
+const rotateLeftBtn = document.getElementById('rotate-left-btn');
+const rotateRightBtn = document.getElementById('rotate-right-btn');
+const hideNameInput = document.getElementById('hide-comp-name-input');
+const hideAllNamesInput = document.getElementById('hide-all-comp-names-input');
+const hideTerminalsInput = document.getElementById('hide-comp-terminals-input');
+const hideAllTerminalsInput = document.getElementById('hide-all-comp-terminals-input');
+const deleteCompBtn = document.getElementById('delete-comp-btn');
+const attrList = document.getElementById('comp-attributes-list');
+
 let selectedComp = null;
 function openComponentAttributesModal() {
     if (selectedComp === null) throw new Error('No component selected');
-    const modal = document.getElementById('comp-attributes-modal');
+    const modal = compAttrModal;
     modal.style.display = 'block';
     const modalHeader = modal.firstElementChild;
-    modalHeader.textContent = `${selectedComp.getComponentTypeName()} Attributes`;
-
-    document.getElementById('hide-comp-name-input').checked = selectedComp.attributes.hideName;
-    document.getElementById('comp-name-input').value = selectedComp.attributes.name;
-    document.getElementById('comp-size-input').value = selectedComp.attributes.size;
+    const compName = selectedComp.getComponentTypeName();
+    modalHeader.textContent = `${compName} Attributes`;
+    compNameInput.value = selectedComp.attributes.name;
+    hideNameInput.checked = selectedComp.attributes.hideName;
+    hideAllNamesInput.nextElementSibling.textContent = `Hide all ${compName} names`;
+    hideAllTerminalsInput.nextElementSibling.textContent = `Hide all ${compName} terminals`;
+    compSizeInput.value = selectedComp.attributes.size;
+    attrList.innerHTML = '';
+    const { name, orientation, size, hideTerminals, hideName, ...rest } = selectedComp.attributes;
+    for (const [key, value] of Object.entries(rest)) {
+        const li = document.createElement('li');
+        const label = document.createElement('label');
+        label.textContent = `${key}: `;
+        label.htmlFor = `attr-${key}`;
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.id = `attr-${key}`;
+        input.value = value;
+        li.appendChild(label);
+        li.appendChild(input);
+        attrList.appendChild(li);
+        input.addEventListener('input', debounce((e) => {
+            if (selectedComp === null) throw new Error('No component selected');
+            const val = parseFloat(e.target.value);
+            if (!isNaN(val) && isFinite(val)) {
+                selectedComp.setAttribute(key, val);
+                console.log("setAttribute", key, val);
+            }
+        }, 1000)); // Debounce the input to save every 
+    }
 };
 
 
 // Handle component attributes modal inputs
-document.getElementById('hide-comp-name-input').addEventListener('click', () => {
-    if (selectedComp === null) throw new Error('No component selected');
-    const hideNameInput = document.getElementById('hide-comp-name-input');
-    selectedComp.hideName(hideNameInput.checked);
-});
-document.getElementById('comp-name-input').addEventListener('input', debounce((e) => {
+compNameInput.addEventListener('input', debounce((e) => {
     if (selectedComp === null) throw new Error('No component selected');
     selectedComp.rename(e.target.value);
 }, 1000)); // Debounce the input to save every 1 second
-document.getElementById('comp-size-input').addEventListener('input', (e) => {
+hideNameInput.addEventListener('click', () => {
+    if (selectedComp === null) throw new Error('No component selected');
+    selectedComp.hideName(hideNameInput.checked);
+});
+hideAllNamesInput.addEventListener('click', () => {
+    if (selectedComp === null) throw new Error('No component selected');
+    console.log("hide all names clicked")
+});
+compSizeInput.addEventListener('input', (e) => {
     if (selectedComp === null) throw new Error('No component selected');
     const val = parseInt(e.target.value);
-    if (!isNaN(val) && isFinite(val)) selectedComp.resize(val);
+    if (!isNaN(val) && isFinite(val))
+        selectedComp.resize(Math.max(compSizeInput.min, Math.min(compSizeInput.max, val)));
 });
-document.getElementById('reset-comp-size-btn').addEventListener('click', () => {
+resetSizeInput.addEventListener('click', () => {
     if (selectedComp === null) throw new Error('No component selected');
     selectedComp.resize(selectedComp.constructor.defaults.size);
-    document.getElementById('comp-size-input').value = selectedComp.attributes.size;
+    compSizeInput.value = selectedComp.attributes.size;
 });
-document.getElementById('delete-comp-btn').addEventListener('click', () => {
+rotateLeftBtn.addEventListener('click', () => {
+    if (selectedComp === null) throw new Error('No component selected');
+    console.log("rotate left clicked")
+});
+rotateRightBtn.addEventListener('click', () => {
+    if (selectedComp === null) throw new Error('No component selected');
+    console.log("rotate right clicked");
+});
+hideTerminalsInput.addEventListener('click', () => {
+    if (selectedComp === null) throw new Error('No component selected');
+    selectedComp.hideTerminals(hideTerminalsInput.checked);
+});
+hideAllTerminalsInput.addEventListener('click', () => {
+    if (selectedComp === null) throw new Error('No component selected');
+    console.log("hide all terminals clicked")
+});
+deleteCompBtn.addEventListener('click', () => {
     if (selectedComp === null) throw new Error('No component selected');
     circuitManager.circuit.deleteSelected();
-    document.getElementById('comp-attributes-modal').style.display = 'none';
+    compAttrModal.style.display = 'none';
 });
 
 
@@ -341,5 +400,5 @@ document.addEventListener('showCompAttrs', (e) => {
 });
 document.addEventListener('hideCompAttrs', () => {
     selectedComp = null;
-    document.getElementById('comp-attributes-modal').style.display = 'none';
+    compAttrModal.style.display = 'none';
 });

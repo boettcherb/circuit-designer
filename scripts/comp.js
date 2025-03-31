@@ -240,6 +240,19 @@ export class Component {
 
     hideName(hide) {
         this.attributes.hideName = hide;
+        // TODO: hide or show name
+        this.circuit.update();
+    }
+
+    hideTerminals(hide) {
+        this.attributes.hideTerminals = hide;
+        // TODO: hide or show terminals
+        this.circuit.update();
+    }
+
+    setAttribute(name, value) {
+        if (this.attributes[name] === undefined) throw new Error('Invalid attribute name');
+        this.attributes[name] = value;
         this.circuit.update();
     }
 }
