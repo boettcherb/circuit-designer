@@ -170,15 +170,35 @@ export class Node {
 
 export class Component {
     constructor(type, gx, gy) {
+        if (new.target === Component)
+            throw new Error('Cannot instantiate abstract class Component directly');
         this.type = type;
         this.gx = gx;
         this.gy = gy;
-        this.group = null;
         this.terminals = [];
+        this.group = new Konva.Group({
+            x: grid.offsetX + gx * grid.gridSize,
+            y: grid.offsetY + gy * grid.gridSize,
+            draggable: true,
+        });
     }
 
-    addGroup(group) {
-        this.group = group;
+    setup(data) {
+        for (const shape of this.shapes)
+            this.group.add(shape);
+        for (const terminal of this.terminals) {
+            this.group.add(terminal.circle);
+            terminal.circle.on('click', (e) => {
+                e.cancelBubble = true;
+                circuit.select(this);
+            });
+        }
+        if (data.s !== undefined) this.resize(data.s);
+        if (data.o !== undefined) {
+            for (let i = 0; i < data.o; i++) {
+                this.rotate(true);
+            }
+        }
     }
 
     updateGridPosition(dx, dy) {
@@ -238,6 +258,24 @@ export class Component {
         this.circuit.update();
     }
 
+    rotate(cw) {
+        this.attributes.orientation = (this.attributes.orientation + (cw ? 1 : 3)) % 4;
+        this.group.rotation(this.attributes.orientation * 90);
+        const radians = this.attributes.orientation * Math.PI / 2;
+        for (const terminal of this.terminals) {
+            const cx = terminal.circle.x() * this.group.scaleX();
+            const cy = terminal.circle.y() * this.group.scaleY();
+            const r = Math.sqrt(cx * cx + cy * cy);
+            const offset = Math.atan2(cy, cx);
+            terminal.gx = this.gx + r * Math.cos(radians + offset) / grid.gridSize;
+            terminal.gy = this.gy + r * Math.sin(radians + offset) / grid.gridSize;
+            for (const wire of terminal.connections) {
+                wire.line.points([...wire.startNode.getPos(), ...wire.endNode.getPos()]);
+            }
+        }
+        this.circuit.update();
+    }
+
     hideName(hide) {
         this.attributes.hideName = hide;
         // TODO: hide or show name
@@ -266,7 +304,7 @@ class Resistor extends Component {
         this.circuit = circuit;
         this.attributes = {
             name: data.n ?? `R${circuit.getCount(ComponentType.RESISTOR) + 1}`,
-            orientation: data.o ?? Resistor.defaults.orientation,
+            orientation: Resistor.defaults.orientation,
             size: Resistor.defaults.size,
             hideTerminals: data.ht ?? Resistor.defaults.hideTerminals,
             hideName: data.hn ?? Resistor.defaults.hideName,
@@ -308,7 +346,7 @@ class Resistor extends Component {
                 strokeWidth: 0,
             }),
         ];
-        if (data.s !== undefined) this.resize(data.s);
+        this.setup(data);
     }
 
     static get defaults() {
@@ -350,7 +388,7 @@ class Capacitor extends Component {
         this.circuit = circuit;
         this.attributes = {
             name: data.n ?? `C${circuit.getCount(ComponentType.CAPACITOR) + 1}`,
-            orientation: data.o ?? Capacitor.defaults.orientation,
+            orientation: Capacitor.defaults.orientation,
             size: Capacitor.defaults.size,
             hideTerminals: data.ht ?? Capacitor.defaults.hideTerminals,
             hideName: data.hn ?? Capacitor.defaults.hideName,
@@ -410,7 +448,7 @@ class Capacitor extends Component {
                 strokeWidth: 0,
             }),
         ];
-        if (data.s !== undefined) this.resize(data.s);
+        this.setup(data);
     }
 
     static get defaults() {
@@ -452,7 +490,7 @@ class Inductor extends Component {
         this.circuit = circuit;
         this.attributes = {
             name: data.n ?? `I${circuit.getCount(ComponentType.INDUCTOR) + 1}`,
-            orientation: data.o ?? Inductor.defaults.orientation,
+            orientation: Inductor.defaults.orientation,
             size: Inductor.defaults.size,
             hideTerminals: data.ht ?? Inductor.defaults.hideTerminals,
             hideName: data.hn ?? Inductor.defaults.hideName,
@@ -513,7 +551,7 @@ class Inductor extends Component {
                 strokeWidth: 0,
             }),
         ];
-        if (data.s !== undefined) this.resize(data.s);
+        this.setup(data);
     }
 
     static get defaults() {
@@ -555,7 +593,7 @@ class Battery extends Component {
         this.circuit = circuit;
         this.attributes = {
             name: data.n ?? `B${circuit.getCount(ComponentType.BATTERY) + 1}`,
-            orientation: data.o ?? Battery.defaults.orientation,
+            orientation: Battery.defaults.orientation,
             size: Battery.defaults.size,
             hideTerminals: data.ht ?? Battery.defaults.hideTerminals,
             hideName: data.hn ?? Battery.defaults.hideName,
@@ -629,7 +667,7 @@ class Battery extends Component {
                 strokeWidth: sWidth,
             }),
         ];
-        if (data.s !== undefined) this.resize(data.s);
+        this.setup(data);
     }
 
     static get defaults() {

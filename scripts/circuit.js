@@ -54,36 +54,21 @@ export class Circuit {
     
     addComponent(component, saveUpdate = true) {
         if (!(component instanceof Component)) throw new Error("component is not a Component!");
-        const group = new Konva.Group({
-            x: grid.offsetX + component.gx * grid.gridSize,
-            y: grid.offsetY + component.gy * grid.gridSize,
-            draggable: true,
-        });
-        component.addGroup(group);
-
-        // add all shapes and terminals to the group
-        for (const shape of component.shapes)
-            group.add(shape);
-        for (const terminal of component.terminals) {
-            group.add(terminal.circle);
-            terminal.circle.on('click', (e) => {
-                e.cancelBubble = true;
-                this.select(component);
-            });
-        }
+        const group = component.group;
 
         group.on('dragmove', () => {
-            group.position(grid.snapToGrid(group.position()));
-            // update wire.line as the component is dragged
+            const snapped = grid.snapToGrid(group.position());
+            if (snapped.x === group.x() && snapped.y === group.y()) return;
+            group.position(snapped);
+            const old_gx = component.gx;
+            const old_gy = component.gy;
+            component.gx = (group.x() - grid.offsetX) / grid.gridSize;
+            component.gy = (group.y() - grid.offsetY) / grid.gridSize;
             for (const terminal of component.terminals) {
+                terminal.gx += component.gx - old_gx;
+                terminal.gy += component.gy - old_gy;
                 for (const wire of terminal.connections) {
-                    if (terminal === wire.startNode) {
-                        wire.line.points()[0] = group.x() + terminal.circle.x() * group.scaleX();
-                        wire.line.points()[1] = group.y() + terminal.circle.y() * group.scaleY();
-                    } else { // terminal === wire.endNode
-                        wire.line.points()[2] = group.x() + terminal.circle.x() * group.scaleX();
-                        wire.line.points()[3] = group.y() + terminal.circle.y() * group.scaleY();
-                    }
+                    wire.line.points([...wire.startNode.getPos(), ...wire.endNode.getPos()]);
                 }
             }
             this.layer.draw();
@@ -95,16 +80,6 @@ export class Circuit {
             if (pos.y + group.height() < 0 || pos.y > stage.height() || pos.x + group.width() < 0 || pos.x > stage.width()) {
                 this.deleteComponent(component);
                 return;
-            }
-
-            // update gx and gy of this component and its terminals based on where it was dragged
-            const old_gx = component.gx;
-            const old_gy = component.gy;
-            component.gx = (group.x() - grid.offsetX) / grid.gridSize;
-            component.gy = (group.y() - grid.offsetY) / grid.gridSize;
-            for (const terminal of component.terminals) {
-                terminal.gx += component.gx - old_gx;
-                terminal.gy += component.gy - old_gy;
             }
             // merge nodes at the new grid position of the component
             for (const terminal of component.terminals) {

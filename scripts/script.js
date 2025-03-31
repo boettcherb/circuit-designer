@@ -335,11 +335,9 @@ function openComponentAttributesModal() {
         li.appendChild(input);
         attrList.appendChild(li);
         input.addEventListener('input', debounce((e) => {
-            if (selectedComp === null) throw new Error('No component selected');
             const val = parseFloat(e.target.value);
             if (!isNaN(val) && isFinite(val)) {
                 selectedComp.setAttribute(key, val);
-                console.log("setAttribute", key, val);
             }
         }, 1000)); // Debounce the input to save every 
     }
@@ -348,46 +346,36 @@ function openComponentAttributesModal() {
 
 // Handle component attributes modal inputs
 compNameInput.addEventListener('input', debounce((e) => {
-    if (selectedComp === null) throw new Error('No component selected');
     selectedComp.rename(e.target.value);
 }, 1000)); // Debounce the input to save every 1 second
 hideNameInput.addEventListener('click', () => {
-    if (selectedComp === null) throw new Error('No component selected');
     selectedComp.hideName(hideNameInput.checked);
 });
 hideAllNamesInput.addEventListener('click', () => {
-    if (selectedComp === null) throw new Error('No component selected');
-    console.log("hide all names clicked")
+    console.log("hide all names clicked");
 });
 compSizeInput.addEventListener('input', (e) => {
-    if (selectedComp === null) throw new Error('No component selected');
     const val = parseInt(e.target.value);
     if (!isNaN(val) && isFinite(val))
         selectedComp.resize(Math.max(compSizeInput.min, Math.min(compSizeInput.max, val)));
 });
 resetSizeInput.addEventListener('click', () => {
-    if (selectedComp === null) throw new Error('No component selected');
     selectedComp.resize(selectedComp.constructor.defaults.size);
     compSizeInput.value = selectedComp.attributes.size;
 });
 rotateLeftBtn.addEventListener('click', () => {
-    if (selectedComp === null) throw new Error('No component selected');
-    console.log("rotate left clicked")
+    selectedComp.rotate(false);
 });
 rotateRightBtn.addEventListener('click', () => {
-    if (selectedComp === null) throw new Error('No component selected');
-    console.log("rotate right clicked");
+    selectedComp.rotate(true);
 });
 hideTerminalsInput.addEventListener('click', () => {
-    if (selectedComp === null) throw new Error('No component selected');
     selectedComp.hideTerminals(hideTerminalsInput.checked);
 });
 hideAllTerminalsInput.addEventListener('click', () => {
-    if (selectedComp === null) throw new Error('No component selected');
-    console.log("hide all terminals clicked")
+    console.log("hide all terminals clicked");
 });
 deleteCompBtn.addEventListener('click', () => {
-    if (selectedComp === null) throw new Error('No component selected');
     circuitManager.circuit.deleteSelected();
     compAttrModal.style.display = 'none';
 });
