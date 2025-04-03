@@ -301,9 +301,8 @@ const resetSizeInput = document.getElementById('reset-comp-size-btn');
 const rotateLeftBtn = document.getElementById('rotate-left-btn');
 const rotateRightBtn = document.getElementById('rotate-right-btn');
 const hideNameInput = document.getElementById('hide-comp-name-input');
-const hideAllNamesInput = document.getElementById('hide-all-comp-names-input');
 const hideTerminalsInput = document.getElementById('hide-comp-terminals-input');
-const hideAllTerminalsInput = document.getElementById('hide-all-comp-terminals-input');
+const applyToAllInput = document.getElementById('apply-to-all-input');
 const deleteCompBtn = document.getElementById('delete-comp-btn');
 const attrList = document.getElementById('comp-attributes-list');
 
@@ -317,9 +316,9 @@ function openComponentAttributesModal() {
     modalHeader.textContent = `${compName} Attributes`;
     compNameInput.value = selectedComp.attributes.name;
     hideNameInput.checked = selectedComp.attributes.hideName;
-    hideAllNamesInput.nextElementSibling.textContent = `Hide all ${compName} names`;
-    hideAllTerminalsInput.nextElementSibling.textContent = `Hide all ${compName} terminals`;
     compSizeInput.value = selectedComp.attributes.size;
+    applyToAllInput.textContent = `Apply these
+        settings to all ${selectedComp.getComponentTypeName(true)}`;
     attrList.innerHTML = '';
     const { name, orientation, size, hideTerminals, hideName, ...rest } = selectedComp.attributes;
     for (const [key, value] of Object.entries(rest)) {
@@ -339,7 +338,7 @@ function openComponentAttributesModal() {
             if (!isNaN(val) && isFinite(val)) {
                 selectedComp.setAttribute(key, val);
             }
-        }, 1000)); // Debounce the input to save every 
+        }, 1000)); // Debounce the input to save every second
     }
 };
 
@@ -347,12 +346,9 @@ function openComponentAttributesModal() {
 // Handle component attributes modal inputs
 compNameInput.addEventListener('input', debounce((e) => {
     selectedComp.rename(e.target.value);
-}, 1000)); // Debounce the input to save every 1 second
+}, 1000)); // Debounce the input to save every second
 hideNameInput.addEventListener('click', () => {
     selectedComp.hideName(hideNameInput.checked);
-});
-hideAllNamesInput.addEventListener('click', () => {
-    console.log("hide all names clicked");
 });
 compSizeInput.addEventListener('input', (e) => {
     const val = parseInt(e.target.value);
@@ -372,8 +368,8 @@ rotateRightBtn.addEventListener('click', () => {
 hideTerminalsInput.addEventListener('click', () => {
     selectedComp.hideTerminals(hideTerminalsInput.checked);
 });
-hideAllTerminalsInput.addEventListener('click', () => {
-    console.log("hide all terminals clicked");
+applyToAllInput.addEventListener('click', () => {
+    console.log("Apply settings to all input pressed");
 });
 deleteCompBtn.addEventListener('click', () => {
     circuitManager.circuit.deleteSelected();

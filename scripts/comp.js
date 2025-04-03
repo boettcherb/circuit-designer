@@ -364,8 +364,8 @@ class Resistor extends Component {
         return this.attributes.name.match(/^R\d+$/) !== null;
     }
 
-    getComponentTypeName() {
-        return "Resistor";
+    getComponentTypeName(plural = false) {
+        return plural ? "Resistors" : "Resistor";
     }
 
     serialize() {
@@ -466,8 +466,8 @@ class Capacitor extends Component {
         return this.attributes.name.match(/^C\d+$/) !== null;
     }
 
-    getComponentTypeName() {
-        return "Capacitor";
+    getComponentTypeName(plural = false) {
+        return plural ? "Capacitors" : "Capacitor";
     }
 
     serialize() {
@@ -569,8 +569,8 @@ class Inductor extends Component {
         return this.attributes.name.match(/^I\d+$/) !== null;
     }
 
-    getComponentTypeName() {
-        return "Inductor";
+    getComponentTypeName(plural = false) {
+        return plural ? "Inductors" : "Inductor";
     }
 
     serialize() {
@@ -685,8 +685,8 @@ class Battery extends Component {
         return this.attributes.name.match(/^B\d+$/) !== null;
     }
 
-    getComponentTypeName() {
-        return "Battery";
+    getComponentTypeName(plural = false) {
+        return plural ? "Batteries" : "Battery";
     }
 
     serialize() {
