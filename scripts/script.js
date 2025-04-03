@@ -302,7 +302,8 @@ const rotateLeftBtn = document.getElementById('rotate-left-btn');
 const rotateRightBtn = document.getElementById('rotate-right-btn');
 const hideNameInput = document.getElementById('hide-comp-name-input');
 const hideTerminalsInput = document.getElementById('hide-comp-terminals-input');
-const applyToAllInput = document.getElementById('apply-to-all-input');
+const applySettingsToAllBtn = document.getElementById('apply-settings-to-all-btn');
+const applyValuesToAllBtn = document.getElementById('apply-values-to-all-btn');
 const deleteCompBtn = document.getElementById('delete-comp-btn');
 const attrList = document.getElementById('comp-attributes-list');
 
@@ -312,13 +313,14 @@ function openComponentAttributesModal() {
     const modal = compAttrModal;
     modal.style.display = 'block';
     const modalHeader = modal.firstElementChild;
-    const compName = selectedComp.getComponentTypeName();
-    modalHeader.textContent = `${compName} Attributes`;
+    modalHeader.textContent = `${selectedComp.getComponentTypeName()} Attributes`;
     compNameInput.value = selectedComp.attributes.name;
     hideNameInput.checked = selectedComp.attributes.hideName;
     compSizeInput.value = selectedComp.attributes.size;
-    applyToAllInput.textContent = `Apply these
-        settings to all ${selectedComp.getComponentTypeName(true)}`;
+    applySettingsToAllBtn.textContent = `Apply these settings
+        to all ${selectedComp.getComponentTypeName(true)}`;
+    applyValuesToAllBtn.textContent = `Apply these values
+        to all ${selectedComp.getComponentTypeName(true)}`;
     attrList.innerHTML = '';
     const { name, orientation, size, hideTerminals, hideName, ...rest } = selectedComp.attributes;
     for (const [key, value] of Object.entries(rest)) {
@@ -368,8 +370,11 @@ rotateRightBtn.addEventListener('click', () => {
 hideTerminalsInput.addEventListener('click', () => {
     selectedComp.hideTerminals(hideTerminalsInput.checked);
 });
-applyToAllInput.addEventListener('click', () => {
-    console.log("Apply settings to all input pressed");
+applySettingsToAllBtn.addEventListener('click', () => {
+    console.log("Apply settings to all button pressed");
+});
+applyValuesToAllBtn.addEventListener('click', () => {
+    console.log("Apply values to all button pressed");
 });
 deleteCompBtn.addEventListener('click', () => {
     circuitManager.circuit.deleteSelected();

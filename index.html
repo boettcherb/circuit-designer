@@ -98,14 +98,11 @@
     </div>
     <div id="comp-attributes-modal">
         <h4></h4>
-        <div id="comp-attributes-data">
+        <div>
+            <hr>
             <div>
                 <label for="comp-name-input">Name:</label>
                 <input type="text" id="comp-name-input" placeholder="Component Name">
-            </div>
-            <div>
-                <input type="checkbox" id="hide-comp-name-input">
-                <label for="hide-comp-name-input"> Hide Name</label>
             </div>
             <div>
                 <label for="comp-size-input">Size:</label>
@@ -116,12 +113,20 @@
                 <button id="rotate-left-btn">Rotate Left</button>
                 <button id="rotate-right-btn">Rotate Right</button>
             </div>
+            <hr>
+            <div>
+                <input type="checkbox" id="hide-comp-name-input">
+                <label for="hide-comp-name-input"> Hide Name</label>
+            </div>
             <div>
                 <input type="checkbox" id="hide-comp-terminals-input">
                 <label for="hide-comp-terminals-input"> Hide Terminals</label>
             </div>
+            <button id="apply-settings-to-all-btn"></button>
+            <hr>
             <ul id="comp-attributes-list"></ul>
-            <button id="apply-to-all-input"></button>
+            <button id="apply-values-to-all-btn"></button>
+            <hr>
             <button id="delete-comp-btn">Delete Component</button>
         </div>
     </div>
