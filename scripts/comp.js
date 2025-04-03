@@ -199,7 +199,7 @@ export class Component {
             this.group.add(terminal.circle);
             terminal.circle.on('click', (e) => {
                 e.cancelBubble = true;
-                circuit.select(this);
+                this.circuit.select(this);
             });
         }
         if (data.s !== undefined) this.resize(data.s);
@@ -450,7 +450,7 @@ class Capacitor extends Component {
         };
         this.terminals = [
             new Node(NodeType.BIDIRECTIONAL, data.x, data.y, this, circuit),
-            new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y, this, circuit),
+            new Node(NodeType.BIDIRECTIONAL, data.x + 2, data.y, this, circuit),
         ];
         const sWidth = s / 12;
         this.shapes = [
@@ -458,7 +458,7 @@ class Capacitor extends Component {
             new Konva.Line({
                 points: [
                     0, 0,
-                    1.2 * s, 0,
+                    0.75 * s, 0,
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
@@ -466,8 +466,8 @@ class Capacitor extends Component {
             // first plate
             new Konva.Line({
                 points: [
-                    1.2 * s, -0.7 * s,
-                    1.2 * s, 0.7 * s,
+                    0.75 * s, -0.7 * s,
+                    0.75 * s, 0.7 * s,
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
@@ -475,8 +475,8 @@ class Capacitor extends Component {
             // second plate
             new Konva.Line({
                 points: [
-                    1.8 * s, -0.7 * s,
-                    1.8 * s, 0.7 * s,
+                    1.25 * s, -0.7 * s,
+                    1.25 * s, 0.7 * s,
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
@@ -484,8 +484,8 @@ class Capacitor extends Component {
             // second lead
             new Konva.Line({
                 points: [
-                    1.8 * s, 0,
-                    3 * s, 0,
+                    1.25 * s, 0,
+                    2 * s, 0,
                 ],
                 stroke: 'black',
                 strokeWidth: sWidth,
@@ -494,7 +494,7 @@ class Capacitor extends Component {
             new Konva.Rect({
                 x: 0,
                 y: -0.5 * s,
-                width: 3 * s,
+                width: 2 * s,
                 height: s,
                 fill: 'transparent',
                 strokeWidth: 0,
@@ -511,7 +511,7 @@ class Capacitor extends Component {
             nameFontBold: false,
             nameFontItalic: false,
             orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
-            size: 3,              // length in grid units
+            size: 2,              // length in grid units
             hideTerminals: false,
             hideName: true,
             capacitance: 1,       // Microfarads
