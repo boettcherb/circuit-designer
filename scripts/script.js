@@ -302,6 +302,10 @@ const rotateLeftBtn = document.getElementById('rotate-left-btn');
 const rotateRightBtn = document.getElementById('rotate-right-btn');
 const hideNameInput = document.getElementById('hide-comp-name-input');
 const hideTerminalsInput = document.getElementById('hide-comp-terminals-input');
+const nameFontSelect = document.getElementById('comp-name-font-select');
+const nameFontSizeInput = document.getElementById('comp-name-font-size-input');
+const nameFontBoldInput = document.getElementById('comp-name-font-bold-input');
+const nameFontItalicInput = document.getElementById('comp-name-font-italic-input');
 const applySettingsToAllBtn = document.getElementById('apply-settings-to-all-btn');
 const applyValuesToAllBtn = document.getElementById('apply-values-to-all-btn');
 const deleteCompBtn = document.getElementById('delete-comp-btn');
@@ -314,16 +318,19 @@ function openComponentAttributesModal() {
     modal.style.display = 'block';
     const modalHeader = modal.firstElementChild;
     modalHeader.textContent = `${selectedComp.getComponentTypeName()} Attributes`;
-    compNameInput.value = selectedComp.attributes.name;
-    hideNameInput.checked = selectedComp.attributes.hideName;
-    compSizeInput.value = selectedComp.attributes.size;
+    compNameInput.value = selectedComp.name;
+    hideNameInput.checked = selectedComp.hideName;
+    compSizeInput.value = selectedComp.size;
+    nameFontSelect.value = selectedComp.nameFont;
+    nameFontSizeInput.value = selectedComp.nameFontSize;
+    nameFontBoldInput.checked = selectedComp.nameFontBold;
+    nameFontItalicInput.checked = selectedComp.nameFontItalic;
     applySettingsToAllBtn.textContent = `Apply these settings
         to all ${selectedComp.getComponentTypeName(true)}`;
     applyValuesToAllBtn.textContent = `Apply these values
         to all ${selectedComp.getComponentTypeName(true)}`;
     attrList.innerHTML = '';
-    const { name, orientation, size, hideTerminals, hideName, ...rest } = selectedComp.attributes;
-    for (const [key, value] of Object.entries(rest)) {
+    for (const [key, value] of Object.entries(selectedComp.attributes)) {
         const li = document.createElement('li');
         const label = document.createElement('label');
         label.textContent = `${key}: `;
@@ -350,7 +357,7 @@ compNameInput.addEventListener('input', debounce((e) => {
     selectedComp.rename(e.target.value);
 }, 1000)); // Debounce the input to save every second
 hideNameInput.addEventListener('click', () => {
-    selectedComp.hideName(hideNameInput.checked);
+    selectedComp.setHideName(hideNameInput.checked);
 });
 compSizeInput.addEventListener('input', (e) => {
     const val = parseInt(e.target.value);
@@ -359,7 +366,7 @@ compSizeInput.addEventListener('input', (e) => {
 });
 resetSizeInput.addEventListener('click', () => {
     selectedComp.resize(selectedComp.constructor.defaults.size);
-    compSizeInput.value = selectedComp.attributes.size;
+    compSizeInput.value = selectedComp.size;
 });
 rotateLeftBtn.addEventListener('click', () => {
     selectedComp.rotate(false);
@@ -368,7 +375,21 @@ rotateRightBtn.addEventListener('click', () => {
     selectedComp.rotate(true);
 });
 hideTerminalsInput.addEventListener('click', () => {
-    selectedComp.hideTerminals(hideTerminalsInput.checked);
+    console.log("Hide terminals input: " + hideTerminalsInput.checked);
+});
+nameFontSelect.addEventListener('change', (e) => {
+    selectedComp.setNameFont(e.target.value);
+});
+nameFontSizeInput.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value);
+    if (!isNaN(val) && isFinite(val))
+        selectedComp.setNameFontSize(Math.max(nameFontSizeInput.min, Math.min(nameFontSizeInput.max, val)));
+});
+nameFontBoldInput.addEventListener('click', () => {
+    selectedComp.setNameFontStyle(nameFontBoldInput.checked, nameFontItalicInput.checked);
+});
+nameFontItalicInput.addEventListener('click', () => {
+    selectedComp.setNameFontStyle(nameFontBoldInput.checked, nameFontItalicInput.checked);
 });
 applySettingsToAllBtn.addEventListener('click', () => {
     console.log("Apply settings to all button pressed");

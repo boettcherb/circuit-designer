@@ -183,7 +183,16 @@ export class Component {
         });
     }
 
-    setup(data) {
+    setup(data, defaults) {
+        this.nameOffset = data.no ?? defaults.nameOffset; 
+        this.nameFont = data.nf ?? defaults.nameFont;
+        this.nameFontSize = data.fs ?? defaults.nameFontSize;
+        this.nameFontBold = data.fb ?? defaults.nameFontBold;
+        this.nameFontItalic = data.fi ?? defaults.nameFontItalic;
+        this.orientation = defaults.orientation;
+        this.size = defaults.size;
+        this.hideTerminals = data.ht ?? defaults.hideTerminals;
+        this.hideName = data.hn ?? defaults.hideName;
         for (const shape of this.shapes)
             this.group.add(shape);
         for (const terminal of this.terminals) {
@@ -199,6 +208,18 @@ export class Component {
                 this.rotate(true);
             }
         }
+        const s = grid.gridSize;
+        this.nameText = new Konva.Text({
+            x: grid.offsetX + (this.gx + this.nameOffset.x) * s,
+            y: grid.offsetY + (this.gy + this.nameOffset.y) * s,
+            text: this.name,
+            fontSize: this.nameFontSize,
+            fontFamily: this.nameFont,
+            fontStyle: (this.nameFontBold ? 'bold' : '') + (this.nameFontItalic ? ' italic' : ''),
+            fill: 'black',
+            align: 'center',
+            draggable: true,
+        });
     }
 
     updateGridPosition(dx, dy) {
@@ -228,13 +249,14 @@ export class Component {
     }
 
     rename(name) {
-        this.attributes.name = name;
+        this.name = name;
+        this.nameText.text(name);
         this.circuit.update();
     }
     
     resize(size) {
-        if (size === this.attributes.size || size < 1) return;
-        const sizeChange = size / this.attributes.size;
+        if (size === this.size || size < 1) return;
+        const sizeChange = size / this.size;
         for (const shape of this.shapes) {
             if (shape instanceof Konva.Line) {
                 shape.points(shape.points().map(point => point * sizeChange));
@@ -254,14 +276,14 @@ export class Component {
                 wire.line.points([...wire.startNode.getPos(), ...wire.endNode.getPos()]);
             }
         }
-        this.attributes.size = size;
+        this.size = size;
         this.circuit.update();
     }
 
     rotate(cw) {
-        this.attributes.orientation = (this.attributes.orientation + (cw ? 1 : 3)) % 4;
-        this.group.rotation(this.attributes.orientation * 90);
-        const radians = this.attributes.orientation * Math.PI / 2;
+        this.orientation = (this.orientation + (cw ? 1 : 3)) % 4;
+        this.group.rotation(this.orientation * 90);
+        const radians = this.orientation * Math.PI / 2;
         for (const terminal of this.terminals) {
             const cx = terminal.circle.x() * this.group.scaleX();
             const cy = terminal.circle.y() * this.group.scaleY();
@@ -276,14 +298,36 @@ export class Component {
         this.circuit.update();
     }
 
-    hideName(hide) {
-        this.attributes.hideName = hide;
-        // TODO: hide or show name
+    setHideName(hide) {
+        this.hideName = hide;
+        if (hide)
+            this.nameText.remove();
+        else
+            this.circuit.layer.add(this.nameText);
         this.circuit.update();
     }
 
-    hideTerminals(hide) {
-        this.attributes.hideTerminals = hide;
+    setNameFont(font) {
+        this.nameFont = font;
+        this.nameText.fontFamily(font);
+        this.circuit.update();
+    }
+
+    setNameFontSize(size) {
+        this.nameFontSize = size;
+        this.nameText.fontSize(size);
+        this.circuit.update();
+    }
+
+    setNameFontStyle(bold, italic) {
+        this.nameFontBold = bold;
+        this.nameFontItalic = italic;
+        this.nameText.fontStyle((bold ? 'bold' : '') + (italic ? ' italic' : ''));
+        this.circuit.update();
+    }
+
+    setHideTerminals(hide) {
+        this.hideTerminals = hide;
         // TODO: hide or show terminals
         this.circuit.update();
     }
@@ -293,6 +337,24 @@ export class Component {
         this.attributes[name] = value;
         this.circuit.update();
     }
+
+    serializeComp(defaults) {
+        const result = { t: this.type, x: this.gx, y: this.gy, n: this.name };
+        const no = this.nameOffset;
+        if (no.x !== defaults.nameOffset.x || no.y !== defaults.nameOffset.y)
+            result.no = { x: parseFloat(no.x.toFixed(3)), y: parseFloat(no.y.toFixed(3)) };
+        if (this.nameFont !== defaults.nameFont)                result.nf = this.nameFont;
+        if (this.nameFontSize !== defaults.nameFontSize)        result.fs = this.nameFontSize;
+        if (this.nameFontBold !== defaults.nameFontBold)        result.fb = this.nameFontBold;
+        if (this.nameFontItalic !== defaults.nameFontItalic)    result.fi = this.nameFontItalic;
+        if (this.orientation !== defaults.orientation)          result.o = this.orientation;
+        if (this.size !== defaults.size)                        result.s = this.size;
+        if (this.hideTerminals !== defaults.hideTerminals)      result.ht = this.hideTerminals;
+        if (this.hideName !== defaults.hideName)                result.hn = this.hideName;
+        if (this.attributes.voltage !== defaults.voltage)       result.v = this.attributes.voltage;
+        if (this.attributes.maxCurrent !== defaults.maxCurrent) result.c = this.attributes.maxCurrent;
+        return result;
+    }
 }
 
 
@@ -300,18 +362,14 @@ class Resistor extends Component {
     constructor(data, circuit) {
         if (data.x === undefined || data.y === undefined)
             throw new Error('Invalid resistor data');
+        const s = grid.gridSize;
         super(ComponentType.RESISTOR, data.x, data.y);
         this.circuit = circuit;
+        this.name = data.n ?? `R${circuit.getCount(ComponentType.RESISTOR) + 1}`,
         this.attributes = {
-            name: data.n ?? `R${circuit.getCount(ComponentType.RESISTOR) + 1}`,
-            orientation: Resistor.defaults.orientation,
-            size: Resistor.defaults.size,
-            hideTerminals: data.ht ?? Resistor.defaults.hideTerminals,
-            hideName: data.hn ?? Resistor.defaults.hideName,
             resistance: data.r ?? Resistor.defaults.resistance,
             powerRating: data.p ?? Resistor.defaults.powerRating,
         };
-        const s = grid.gridSize;
         this.terminals = [
             new Node(NodeType.BIDIRECTIONAL, data.x, data.y, this, circuit),
             new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y, this, circuit),
@@ -346,11 +404,16 @@ class Resistor extends Component {
                 strokeWidth: 0,
             }),
         ];
-        this.setup(data);
+        this.setup(data, Resistor.defaults);
     }
 
     static get defaults() {
         return Object.freeze({
+            nameOffset: {x: 1.1, y: -1.2},
+            nameFont: "calibri",
+            nameFontSize: 30,
+            nameFontBold: false,
+            nameFontItalic: false,
             orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
             size: 3,              // length in grid units
             hideTerminals: false,
@@ -361,7 +424,7 @@ class Resistor extends Component {
     }
 
     hasDefaultName() {
-        return this.attributes.name.match(/^R\d+$/) !== null;
+        return this.name.match(/^R\d+$/) !== null;
     }
 
     getComponentTypeName(plural = false) {
@@ -369,14 +432,7 @@ class Resistor extends Component {
     }
 
     serialize() {
-        const result = { t: this.type, x: this.gx, y: this.gy, n: this.attributes.name };
-        if (this.attributes.orientation !== Resistor.defaults.orientation)     result.o = this.attributes.orientation;
-        if (this.attributes.size !== Resistor.defaults.size)                   result.s = this.attributes.size;
-        if (this.attributes.hideTerminals !== Resistor.defaults.hideTerminals) result.ht = this.attributes.hideTerminals;
-        if (this.attributes.hideName !== Resistor.defaults.hideName)           result.hn = this.attributes.hideName;
-        if (this.attributes.resistance !== Resistor.defaults.resistance)       result.r = this.attributes.resistance;
-        if (this.attributes.powerRating !== Resistor.defaults.powerRating)     result.p = this.attributes.powerRating;
-        return result;
+        return this.serializeComp(Resistor.defaults);
     }
 }
 
@@ -385,17 +441,13 @@ class Capacitor extends Component {
     constructor(data, circuit) {
         if (data.x === undefined || data.y === undefined) throw new Error('Invalid capacitor data');
         super(ComponentType.CAPACITOR, data.x, data.y);
+        const s = grid.gridSize;
         this.circuit = circuit;
+        this.name = data.n ?? `C${circuit.getCount(ComponentType.CAPACITOR) + 1}`,
         this.attributes = {
-            name: data.n ?? `C${circuit.getCount(ComponentType.CAPACITOR) + 1}`,
-            orientation: Capacitor.defaults.orientation,
-            size: Capacitor.defaults.size,
-            hideTerminals: data.ht ?? Capacitor.defaults.hideTerminals,
-            hideName: data.hn ?? Capacitor.defaults.hideName,
             capacitance: data.c ?? Capacitor.defaults.capacitance,
             voltageRating: data.v ?? Capacitor.defaults.voltageRating,
         };
-        const s = grid.gridSize;
         this.terminals = [
             new Node(NodeType.BIDIRECTIONAL, data.x, data.y, this, circuit),
             new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y, this, circuit),
@@ -448,11 +500,16 @@ class Capacitor extends Component {
                 strokeWidth: 0,
             }),
         ];
-        this.setup(data);
+        this.setup(data, Capacitor.defaults);
     }
 
     static get defaults() {
         return Object.freeze({
+            nameOffset: {x: 2, y: -0.8},
+            nameFont: "calibri",
+            nameFontSize: 30,
+            nameFontBold: false,
+            nameFontItalic: false,
             orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
             size: 3,              // length in grid units
             hideTerminals: false,
@@ -463,7 +520,7 @@ class Capacitor extends Component {
     }
 
     hasDefaultName() {
-        return this.attributes.name.match(/^C\d+$/) !== null;
+        return this.name.match(/^C\d+$/) !== null;
     }
 
     getComponentTypeName(plural = false) {
@@ -471,14 +528,7 @@ class Capacitor extends Component {
     }
 
     serialize() {
-        const result = { t: this.type, x: this.gx, y: this.gy, n: this.attributes.name };
-        if (this.attributes.orientation !== Capacitor.defaults.orientation)     result.o = this.attributes.orientation;
-        if (this.attributes.size !== Capacitor.defaults.size)                   result.s = this.attributes.size;
-        if (this.attributes.hideTerminals !== Capacitor.defaults.hideTerminals) result.ht = this.attributes.hideTerminals;
-        if (this.attributes.hideName !== Capacitor.defaults.hideName)           result.hn = this.attributes.hideName;
-        if (this.attributes.capacitance !== Capacitor.defaults.capacitance)     result.c = this.attributes.capacitance;
-        if (this.attributes.voltageRating !== Capacitor.defaults.voltageRating) result.v = this.attributes.voltageRating;
-        return result;
+        return this.serializeComp(Capacitor.defaults);
     }
 }
 
@@ -487,17 +537,13 @@ class Inductor extends Component {
     constructor(data, circuit) {
         if (data.x === undefined || data.y === undefined) throw new Error('Invalid inductor data');
         super(ComponentType.INDUCTOR, data.x, data.y);
+        const s = grid.gridSize;
         this.circuit = circuit;
+        this.name = data.n ?? `I${circuit.getCount(ComponentType.INDUCTOR) + 1}`,
         this.attributes = {
-            name: data.n ?? `I${circuit.getCount(ComponentType.INDUCTOR) + 1}`,
-            orientation: Inductor.defaults.orientation,
-            size: Inductor.defaults.size,
-            hideTerminals: data.ht ?? Inductor.defaults.hideTerminals,
-            hideName: data.hn ?? Inductor.defaults.hideName,
             inductance: data.i ?? Inductor.defaults.inductance,
             maxCurrent: data.c ?? Inductor.defaults.maxCurrent,
         };
-        const s = grid.gridSize;
         this.terminals = [
             new Node(NodeType.BIDIRECTIONAL, data.x, data.y, this, circuit),
             new Node(NodeType.BIDIRECTIONAL, data.x + 3, data.y, this, circuit),
@@ -551,11 +597,16 @@ class Inductor extends Component {
                 strokeWidth: 0,
             }),
         ];
-        this.setup(data);
+        this.setup(data, Inductor.defaults);
     }
 
     static get defaults() {
         return Object.freeze({
+            nameOffset: {x: 1.2, y: -1.3},
+            nameFont: "calibri",
+            nameFontSize: 30,
+            nameFontBold: false,
+            nameFontItalic: false,
             orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
             size: 3,              // length in grid units
             hideTerminals: false,
@@ -566,7 +617,7 @@ class Inductor extends Component {
     }
 
     hasDefaultName() {
-        return this.attributes.name.match(/^I\d+$/) !== null;
+        return this.name.match(/^I\d+$/) !== null;
     }
 
     getComponentTypeName(plural = false) {
@@ -574,14 +625,7 @@ class Inductor extends Component {
     }
 
     serialize() {
-        const result = { t: this.type, x: this.gx, y: this.gy, n: this.attributes.name };
-        if (this.attributes.orientation !== Inductor.defaults.orientation)     result.o = this.attributes.orientation;
-        if (this.attributes.size !== Inductor.defaults.size)                   result.s = this.attributes.size;
-        if (this.attributes.hideTerminals !== Inductor.defaults.hideTerminals) result.ht = this.attributes.hideTerminals;
-        if (this.attributes.hideName !== Inductor.defaults.hideName)           result.hn = this.attributes.hideName;
-        if (this.attributes.inductance !== Inductor.defaults.inductance)       result.i = this.attributes.inductance;
-        if (this.attributes.maxCurrent !== Inductor.defaults.maxCurrent)       result.c = this.attributes.maxCurrent;
-        return result;
+        return this.serializeComp(Inductor.defaults);
     }
 }
 
@@ -590,17 +634,13 @@ class Battery extends Component {
     constructor(data, circuit) {
         if (data.x === undefined || data.y === undefined) throw new Error('Invalid battery data');
         super(ComponentType.BATTERY, data.x, data.y);
+        const s = grid.gridSize;
         this.circuit = circuit;
+        this.name = data.n ?? `B${circuit.getCount(ComponentType.BATTERY) + 1}`,
         this.attributes = {
-            name: data.n ?? `B${circuit.getCount(ComponentType.BATTERY) + 1}`,
-            orientation: Battery.defaults.orientation,
-            size: Battery.defaults.size,
-            hideTerminals: data.ht ?? Battery.defaults.hideTerminals,
-            hideName: data.hn ?? Battery.defaults.hideName,
             voltage: data.v ?? Battery.defaults.voltage,
             maxCurrent: data.c ?? Battery.defaults.maxCurrent,
         }
-        const s = grid.gridSize;
         this.terminals = [
             new Node(NodeType.OUTPUT, data.x, data.y, this, circuit),
             new Node(NodeType.INPUT, data.x, data.y + 6, this, circuit),
@@ -667,11 +707,16 @@ class Battery extends Component {
                 strokeWidth: sWidth,
             }),
         ];
-        this.setup(data);
+        this.setup(data, Battery.defaults);
     }
 
     static get defaults() {
         return Object.freeze({
+            nameOffset: {x: 0.4, y: 0.1},
+            nameFont: "calibri",
+            nameFontSize: 30,
+            nameFontBold: false,
+            nameFontItalic: false,
             orientation: 0,       // 0-4: 0, 90, 180, 270 degrees
             size: 6,              // height in grid units
             hideTerminals: false,
@@ -682,7 +727,7 @@ class Battery extends Component {
     }
 
     hasDefaultName() {
-        return this.attributes.name.match(/^B\d+$/) !== null;
+        return this.name.match(/^B\d+$/) !== null;
     }
 
     getComponentTypeName(plural = false) {
@@ -690,13 +735,6 @@ class Battery extends Component {
     }
 
     serialize() {
-        const result = { t: this.type, x: this.gx, y: this.gy, n: this.attributes.name };
-        if (this.attributes.orientation !== Battery.defaults.orientation)     result.o = this.attributes.orientation;
-        if (this.attributes.size !== Battery.defaults.size)                   result.s = this.attributes.size;
-        if (this.attributes.hideTerminals !== Battery.defaults.hideTerminals) result.ht = this.attributes.hideTerminals;
-        if (this.attributes.hideName !== Battery.defaults.hideName)           result.hn = this.attributes.hideName;
-        if (this.attributes.voltage !== Battery.defaults.voltage)             result.v = this.attributes.voltage;
-        if (this.attributes.maxCurrent !== Battery.defaults.maxCurrent)       result.c = this.attributes.maxCurrent;
-        return result;
+        return this.serializeComp(Battery.defaults);
     }
 }

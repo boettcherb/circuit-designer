@@ -71,13 +71,18 @@ export class Circuit {
                     wire.line.points([...wire.startNode.getPos(), ...wire.endNode.getPos()]);
                 }
             }
+            component.nameText.x(group.x() + component.nameOffset.x * grid.gridSize);
+            component.nameText.y(group.y() + component.nameOffset.y * grid.gridSize);
+            component.group.moveToTop();
+            if (!component.hideName) component.nameText.moveToTop();
             this.layer.draw();
         });
 
         group.on('dragend', () => {
             // If the component is outside the stage, remove it
             const pos = group.position();
-            if (pos.y + group.height() < 0 || pos.y > stage.height() || pos.x + group.width() < 0 || pos.x > stage.width()) {
+            if (pos.y + group.height() < 0 || pos.y > stage.height() ||
+                pos.x + group.width() < 0 || pos.x > stage.width()) {
                 this.deleteComponent(component);
                 return;
             }
@@ -89,16 +94,35 @@ export class Circuit {
             this.update();
         });
 
+        component.nameText.on('dragend', () => {
+            // If the name text is outside the stage, remove it
+            const pos = component.nameText.position();
+            if (pos.y + component.nameText.height() < 0 || pos.y > stage.height() ||
+                pos.x + component.nameText.width() < 0 || pos.x > stage.width()) {
+                component.nameText.x(group.x() + component.nameOffset.x * grid.gridSize);
+                component.nameText.y(group.y() + component.nameOffset.y * grid.gridSize);
+                component.setHideName(true);
+                return;
+            }
+            component.nameOffset.x = (component.nameText.x() - group.x()) / grid.gridSize;
+            component.nameOffset.y = (component.nameText.y() - group.y()) / grid.gridSize;
+            this.layer.draw();
+        });
+
         // Prevent grid from dragging when the user is dragging a component
         group.on('mousedown touchstart', (e) => { e.cancelBubble = true; });
+        component.nameText.on('mousedown touchstart', (e) => { e.cancelBubble = true; });
 
         group.on('click', () => { this.select(component); });
         group.on('mouseover', () => { document.body.style.cursor = 'pointer'; });
         group.on('mouseout', () => { document.body.style.cursor = 'default'; });
+        component.nameText.on('click', () => { this.select(component); });
+        component.nameText.on('mouseover', () => { document.body.style.cursor = 'pointer'; });
+        component.nameText.on('mouseout', () => { document.body.style.cursor = 'default'; });
 
         // if the component has a default name, increment the count
         if (component.hasDefaultName()) {
-            const num = parseInt(component.attributes.name.slice(1), 10);
+            const num = parseInt(component.name.slice(1), 10);
             if (isNaN(num)) throw new Error("Invalid default name!");
             if (!this.counts.has(component.type) || num > this.counts.get(component.type))
                 this.counts.set(component.type, num);
@@ -106,6 +130,7 @@ export class Circuit {
 
         this.components.push(component);
         this.layer.add(group);
+        if (!component.hideName) this.layer.add(component.nameText);
         this.layer.draw();
         if (saveUpdate) this.update();
     }
@@ -128,12 +153,12 @@ export class Circuit {
         // if this component has a default name with the highest number, set the count
         // to the next highest number.
         if (comp.hasDefaultName()) {
-            const num = parseInt(comp.attributes.name.slice(1), 10);
+            const num = parseInt(comp.name.slice(1), 10);
             if (num === this.counts.get(comp.type)) {
                 let highest = 0;
                 for (const comp of this.components) {
                     if (comp.type === comp.type && comp.hasDefaultName()) {
-                        const n = parseInt(comp.attributes.name.slice(1), 10);
+                        const n = parseInt(comp.name.slice(1), 10);
                         if (n > highest) highest = n;
                     }
                 }
@@ -142,6 +167,7 @@ export class Circuit {
         }
 
         comp.group.destroy();
+        comp.nameText.destroy();
         this.layer.draw();
         if (saveUpdate) this.update();
     }
@@ -281,6 +307,8 @@ export class Circuit {
         for (const comp of this.components) {
             comp.group.x(grid.offsetX + comp.gx * grid.gridSize);
             comp.group.y(grid.offsetY + comp.gy * grid.gridSize);
+            comp.nameText.x(comp.group.x() + comp.nameOffset.x * grid.gridSize);
+            comp.nameText.y(comp.group.y() + comp.nameOffset.y * grid.gridSize);
         }
         for (const wire of this.wires) {
             wire.line.points([...wire.startNode.getPos(), ...wire.endNode.getPos()]);
@@ -299,6 +327,9 @@ export class Circuit {
             const sx = comp.group.scaleX();
             const sy = comp.group.scaleY();
             comp.group.scale({ x: sx * scaleFactor, y: sy * scaleFactor });
+            comp.nameText.x(comp.group.x() + comp.nameOffset.x * grid.gridSize);
+            comp.nameText.y(comp.group.y() + comp.nameOffset.y * grid.gridSize);
+            comp.nameText.fontSize(comp.nameText.fontSize() * scaleFactor);
         }
         for (const wire of this.wires) {
             wire.line.strokeWidth(grid.gridSize / 12);
@@ -386,10 +417,12 @@ export class Circuit {
             }
         }
         this.layer.draw();
-        // send a custom event to open the component properties modal
         if (obj instanceof Component) {
+            // send a custom event to open the component properties modal
             const event = new CustomEvent('showCompAttrs', { detail: { comp: obj } });
             document.dispatchEvent(event);
+            // Color the component name text
+            obj.nameText.fill(selectedColor);
         }
     }
 
@@ -398,6 +431,7 @@ export class Circuit {
             if (o instanceof Component) {
                 o.group.find('Line').forEach(line => { line.stroke('black'); });
                 o.group.find('Circle').forEach(circle => { circle.fill('black'); });
+                o.nameText.fill('black');
             } else if (o instanceof Wire) {
                 o.line.stroke('black');
             } else if (o instanceof Node) {
