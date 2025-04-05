@@ -8,12 +8,29 @@ body {
 }
 
 #menu-bar {
+    width: 100vw;            /* Take up full width of screen */
     grid-column: span 2;     /* Span both columns */
     background-color: #333;  /* Dark background color */
     color: #fff;             /* Light text color */
     display: flex;           /* Use flexbox layout (horizontal axis */
-    align-items: center;     /* Center items vertically */
-    /* padding-left: 10px;      Add padding to the left */
+}
+
+#current-circuit {
+    min-width: 200px;        /* Minimum width of 150px */
+    max-width: 300px;        /* Maximum width of 300px */
+    height: 40px;            /* Height of 40px */
+    text-align: center;      /* Center text */
+    background-color: #555;  /* Gray background */
+    padding: 0 10px;         /* 0px padding top/bottom, 10px padding left/right */
+    display: flex;           /* Use flexbox layout */
+    align-items: center;     /* Center text vertically */
+}
+
+#menu-btns {
+    display: flex;                 /* Use flexbox layout (horizontal axis) */
+    justify-content: space-evenly; /* Evenly space buttons */
+    width: 100%;                   /* Take up full width of menu bar minus current curcuit */
+    align-items: center;           /* Center items vertically */
 }
 
 .menu-btn {
@@ -21,7 +38,7 @@ body {
     border: none;                  /* Remove border */
     border-radius: 4px;            /* Rounded corners */
     color: white;                /* White text color */
-    padding: 6px 20px;             /* 6px padding top/bottom, 20px padding left/right */
+    padding: 6px 10px;             /* 6px padding top/bottom, 10px padding left/right */
     font-size: 14px;               /* Medium font size */
     cursor: pointer;               /* Change cursor to pointer on hover */
 }
@@ -37,12 +54,6 @@ body {
     display: flex;              /* Use flexbox layout */
     flex-direction: column;     /* Use vertical axis in flexbox layout */
     padding: 10px;              /* Padding all around */
-}
-
-#current-circuit {
-    margin-right: 10px;     /* Add space to the right */
-    padding: 30px;          /* Add padding all around */
-    background-color: #555; /* Gray background */
 }
 
 .sidebar-tab {
@@ -87,8 +98,15 @@ body {
     background-color: #e0e0e0;   /* Slightly darken background on hover */
 }
 
-#canvas-container { background-color: #f9f9f9; }  /* Light background color */
-#canvas { background-color: #fff; }               /* White background */
+#canvas-container {
+    width: calc(100vw - 200px);   /* Take up remaining width of screen */
+    height: calc(100vh - 40px);   /* Take up remaining height of screen */
+    background-color: #f9f9f9;    /* Light background color */
+}
+
+#canvas {
+    background-color: #fff;       /* White background */
+}
 
 .material-icons.md-24 { font-size: 24px; }  /* 24px icon size */
 .material-icons.md-32 { font-size: 32px; }  /* 32px icon size */
