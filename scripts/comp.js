@@ -376,33 +376,10 @@ class Resistor extends Component {
         ];
         const sWidth = s / 12;
         this.shapes = [
-            new Konva.Line({
-                points: [
-                    0, 0,
-                    0.75 * s, 0,
-                    0.875 * s, -0.5 * s,
-                    1.125 * s, 0.5 * s,
-                    1.375 * s, -0.5 * s,
-                    1.625 * s, 0.5 * s,
-                    1.875 * s, -0.5 * s,
-                    2.125 * s, 0.5 * s,
-                    2.25 * s, 0,
-                    3 * s, 0
-                ],
-                stroke: 'black',
-                strokeWidth: sWidth,
-                lineCap: 'round',
-                lineJoin: 'round',
-            }),
-            // hitbox
-            new Konva.Rect({
-                x: 0,
-                y: -0.5 * s,
-                width: 3 * s,
-                height: s,
-                fill: 'transparent',
-                strokeWidth: 0,
-            }),
+            new Konva.Line({points: [0, 0, 0.75*s, 0, 0.875*s, -0.5*s, 1.125*s, 0.5*s, 1.375*s,
+                -0.5*s, 1.625*s, 0.5*s, 1.875*s, -0.5*s, 2.125*s, 0.5*s, 2.25*s, 0, 3*s, 0],
+                stroke: 'black', strokeWidth: sWidth, lineCap: 'round', lineJoin: 'round'}),
+            new Konva.Rect({x: 0, y: -0.5*s, width: 3*s, height: s, fill: 'transparent', strokeWidth: 0}),
         ];
         this.setup(data, Resistor.defaults);
     }
@@ -454,51 +431,11 @@ class Capacitor extends Component {
         ];
         const sWidth = s / 12;
         this.shapes = [
-            // first lead
-            new Konva.Line({
-                points: [
-                    0, 0,
-                    0.75 * s, 0,
-                ],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // first plate
-            new Konva.Line({
-                points: [
-                    0.75 * s, -0.7 * s,
-                    0.75 * s, 0.7 * s,
-                ],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // second plate
-            new Konva.Line({
-                points: [
-                    1.25 * s, -0.7 * s,
-                    1.25 * s, 0.7 * s,
-                ],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // second lead
-            new Konva.Line({
-                points: [
-                    1.25 * s, 0,
-                    2 * s, 0,
-                ],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // hitbox
-            new Konva.Rect({
-                x: 0,
-                y: -0.5 * s,
-                width: 2 * s,
-                height: s,
-                fill: 'transparent',
-                strokeWidth: 0,
-            }),
+            new Konva.Line({points: [0, 0, 0.75*s, 0], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Line({points: [0.75*s, -0.7*s, 0.75*s, 0.7*s], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Line({points: [1.25*s, -0.7*s, 1.25*s, 0.7*s], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Line({points: [1.25*s, 0, 2*s, 0], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Rect({x: 0, y: -0.5*s, width: 2*s, height: s, fill: 'transparent', strokeWidth: 0}),
         ];
         this.setup(data, Capacitor.defaults);
     }
@@ -550,52 +487,13 @@ class Inductor extends Component {
         ];
         const sWidth = s / 12;
         this.shapes = [
-            // First lead
-            new Konva.Line({
-                points: [0, 0, 0.5 * s, 0],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // Coil
-            new Konva.Line({
-                points: [
-                    0.5 * s, 0,
-                    0.825 * s, -0.5 * s,
-                    1.15 * s, 0,
-                    1.05 * s, 0.3 * s,
-                    0.95 * s, 0,
-                    1.275 * s, -0.5 * s,
-                    1.6 * s, 0,
-                    1.5 * s, 0.3 * s,
-                    1.4 * s, 0,
-                    1.725 * s, -0.5 * s,
-                    2.05 * s, 0,
-                    1.95 * s, 0.3 * s,
-                    1.85 * s, 0,
-                    2.175 * s, -0.5 * s,
-                    2.5 * s, 0,
-                ],
-                stroke: 'black',
-                strokeWidth: sWidth,
-                lineCap: 'round',
-                lineJoin: 'round',
-                tension: .5,
-            }),
-            // Second lead
-            new Konva.Line({
-                points: [2.5 * s, 0, 3 * s, 0],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // Hitbox
-            new Konva.Rect({
-                x: 0,
-                y: -0.5 * s,
-                width: 3 * s,
-                height: s,
-                fill: 'transparent',
-                strokeWidth: 0,
-            }),
+            new Konva.Line({ points: [0, 0, 0.5*s, 0], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Line({points: [0.5*s, 0, 0.825*s, -0.5*s, 1.15*s, 0, 1.05*s, 0.3*s,
+                0.95*s, 0, 1.275*s, -0.5*s, 1.6*s, 0, 1.5*s, 0.3*s, 1.4*s, 0, 1.725*s,
+                -0.5*s, 2.05*s, 0, 1.95*s, 0.3*s, 1.85*s, 0, 2.175*s, -0.5*s, 2.5*s, 0],
+                stroke: 'black', strokeWidth: sWidth, lineCap: 'round', lineJoin: 'round', tension: .5}),
+            new Konva.Line({points: [2.5 * s, 0, 3 * s, 0], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Rect({x: 0, y: -0.5*s, width: 3*s, height: s, fill: 'transparent', strokeWidth: 0}),
         ];
         this.setup(data, Inductor.defaults);
     }
@@ -647,65 +545,14 @@ class Battery extends Component {
         ];
         const sWidth = s / 12;
         this.shapes = [
-            // first lead
-            new Konva.Line({
-                points: [0, 0, 0, 0.8 * s],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // hitbox
-            new Konva.Rect({
-                x: -1.2 * s,
-                y: 0.8 * s,
-                width: 2.4 * s,
-                height: 4.4 * s,
-                fill: 'white',
-                stroke: 'black',
-                strokeWidth: 0,
-            }),
-            // battery outline
-            new Konva.Line({
-                points: [
-                    -1.2 * s, 0.8 * s,
-                    -1.2 * s, 5.2 * s,
-                    1.2 * s, 5.2 * s,
-                    1.2 * s, 0.8 * s,
-                    -1.2 * s, 0.8 * s,
-                ],
-                stroke: 'black',
-                lineCap: 'round',
-                lineJoin: 'round',
-                strokeWidth: sWidth,
-            }),
-            // Plus sign
-            new Konva.Line({
-                points: [
-                    -0.5 * s, 1.6 * s,
-                    0.5 * s, 1.6 * s],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            new Konva.Line({
-                points: [
-                    0, 1.1 * s,
-                    0, 2.1 * s],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // Minus sign
-            new Konva.Line({
-                points: [
-                    -0.5 * s, 4.4 * s,
-                    0.5 * s, 4.4 * s],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
-            // second lead
-            new Konva.Line({
-                points: [0, 6 * s, 0, 5.2 * s],
-                stroke: 'black',
-                strokeWidth: sWidth,
-            }),
+            new Konva.Line({points: [0, 0, 0, 0.8*s], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Rect({x: -1.2*s, y: 0.8*s, width: 2.4*s, height: 4.4*s, fill: 'white', stroke: 'black', strokeWidth: 0}),
+            new Konva.Line({points: [-1.2*s, 0.8*s, -1.2*s, 5.2*s, 1.2*s, 5.2*s, 1.2*s, 0.8*s, -1.2*s, 0.8*s],
+                stroke: 'black', lineCap: 'round', lineJoin: 'round', strokeWidth: sWidth}),
+            new Konva.Line({points: [-0.5*s, 1.6*s, 0.5*s, 1.6*s], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Line({points: [0, 1.1*s, 0, 2.1*s], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Line({points: [-0.5*s, 4.4*s, 0.5*s, 4.4*s], stroke: 'black', strokeWidth: sWidth}),
+            new Konva.Line({points: [0, 6*s, 0, 5.2*s], stroke: 'black', strokeWidth: sWidth}),
         ];
         this.setup(data, Battery.defaults);
     }
