@@ -62,5 +62,5 @@ class Grid {
     }
 }
 
-const DEFAULT_GRID_CELL_SIZE = 40;
+export const DEFAULT_GRID_CELL_SIZE = 40;
 export const grid = new Grid(DEFAULT_GRID_CELL_SIZE);

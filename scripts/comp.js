@@ -1,5 +1,5 @@
 import { stage } from "./stage.js"
-import { grid } from "./grid.js";
+import { DEFAULT_GRID_CELL_SIZE, grid } from "./grid.js";
 
 
 // enum for component types
@@ -213,7 +213,7 @@ export class Component {
             x: grid.offsetX + (this.gx + this.nameOffset.x) * s,
             y: grid.offsetY + (this.gy + this.nameOffset.y) * s,
             text: this.name,
-            fontSize: this.nameFontSize,
+            fontSize: this.nameFontSize * s / DEFAULT_GRID_CELL_SIZE,
             fontFamily: this.nameFont,
             fontStyle: (this.nameFontBold ? 'bold' : '') + (this.nameFontItalic ? ' italic' : ''),
             fill: 'black',
@@ -505,7 +505,7 @@ class Capacitor extends Component {
 
     static get defaults() {
         return Object.freeze({
-            nameOffset: {x: 2, y: -0.8},
+            nameOffset: {x: 0.6, y: -1.5},
             nameFont: "calibri",
             nameFontSize: 30,
             nameFontBold: false,
