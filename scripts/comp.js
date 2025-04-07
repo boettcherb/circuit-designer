@@ -4,20 +4,20 @@ import { DEFAULT_GRID_CELL_SIZE, grid } from "./grid.js";
 
 // enum for component types
 export const ComponentType = {
-    BATTERY: 1000,
-    GROUND: 1001,
-    INPUT_BIT: 1002,
-    OUTPUT_BIT: 1003,
-    RESISTOR: 2000,
-    CAPACITOR: 2001,
-    INDUCTOR: 2002,
-    AND_GATE: 3000,
-    OR_GATE: 3001,
-    NOT_GATE: 3002,
-    XOR_GATE: 3003,
-    NAND_GATE: 3004,
-    NOR_GATE: 3005,
-    XNOR_GATE: 3006,
+    BATTERY: 0,
+    GROUND: 1,
+    INPUT_BIT: 2,
+    OUTPUT_BIT: 3,
+    RESISTOR: 4,
+    CAPACITOR: 5,
+    INDUCTOR: 6,
+    AND_GATE: 7,
+    OR_GATE: 8,
+    NOT_GATE: 9,
+    XOR_GATE: 10,
+    NAND_GATE: 11,
+    NOR_GATE: 12,
+    XNOR_GATE: 13,
 };
 
 
@@ -73,7 +73,7 @@ export class Node {
         });
 
         // left click on node: create wire coming from node
-        // right click on node: start dragging node
+        // right click on node: start dragging the node or the node's component
         this.circle.on('mousedown', (e) => {
             e.cancelBubble = true;
             if (e.evt.button === 2) { // right click
@@ -118,7 +118,7 @@ export class Node {
     
     createWire(startX, startY) {
         const wire = new Wire(this, startX, startY);
-        // temporarily add wire to layer so we can see it as it is being drawn
+        // temporarily add wire to layer so it is visible as it is being drawn
         this.circuit.layer.add(wire.line);
 
         // Update wire endpoint on mousemove
@@ -133,8 +133,7 @@ export class Node {
             stage.off('mouseup.wire');   // Remove this listener
             const gx2 = this.gx + (wire.line.points()[2] - startX) / grid.gridSize;
             const gy2 = this.gy + (wire.line.points()[3] - startY) / grid.gridSize;
-            // if the created wire is length 0, delete it
-            if (this.gx == gx2 && this.gy == gy2) {
+            if (this.gx == gx2 && this.gy == gy2) { // if the created wire is length 0, delete it
                 wire.line.remove();
             } else {
                 let endNode = this.circuit.getNodesAt(gx2, gy2)[0];
@@ -153,17 +152,11 @@ export class Node {
     }
 
     hasWireTo(node) {
-        for (const wire of this.connections) {
-            if (wire.startNode === node || wire.endNode === node) return true;
-        }
-        return false;
+        return this.connections.some(wire => wire.endNode === node || wire.startNode === node);
     }
 
     getPos() {
-        return [
-            this.gx * grid.gridSize + grid.offsetX,
-            this.gy * grid.gridSize + grid.offsetY,
-        ];
+        return [this.gx * grid.gridSize + grid.offsetX, this.gy * grid.gridSize + grid.offsetY];
     }
 }
 
