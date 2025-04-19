@@ -333,7 +333,7 @@ function openComponentAttributesModal() {
     for (const [key, value] of Object.entries(selectedComp.attributes)) {
         const li = document.createElement('li');
         const label = document.createElement('label');
-        label.textContent = `${key}: `;
+        label.textContent = `${Component.getAttrName(key)}: `;
         label.htmlFor = `attr-${key}`;
         const input = document.createElement('input');
         input.type = 'number';
@@ -347,7 +347,7 @@ function openComponentAttributesModal() {
             if (!isNaN(val) && isFinite(val)) {
                 selectedComp.setAttribute(key, val);
             }
-        }, 1000)); // Debounce the input to save every second
+        }, 1000));
     }
 };
 
@@ -355,7 +355,7 @@ function openComponentAttributesModal() {
 // Handle component attributes modal inputs
 compNameInput.addEventListener('input', debounce((e) => {
     selectedComp.rename(e.target.value);
-}, 1000)); // Debounce the input to save every second
+}, 1000));
 hideNameInput.addEventListener('click', () => {
     selectedComp.setHideName(hideNameInput.checked);
 });

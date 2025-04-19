@@ -331,6 +331,18 @@ export class Component {
         this.circuit.update();
     }
 
+    static getAttrName(attr) {
+        switch (attr) {
+            case 'voltage': return 'Voltage (V)';
+            case 'resistance': return 'Resistance (Ohms)';
+            case 'capacitance': return 'Capacitance (uF)';
+            case 'inductance': return 'Inductance (H)';
+            case 'powerRating': return 'Power Rating (W)';
+            case 'maxCurrent': return 'Max Current (A)';
+            default: throw new Error('Invalid attribute name');
+        }
+    }
+
     serializeComp(defaults) {
         const result = { t: this.type, x: this.gx, y: this.gy, n: this.name };
         const no = this.nameOffset;
